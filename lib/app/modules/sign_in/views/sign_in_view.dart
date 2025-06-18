@@ -76,6 +76,7 @@ class SignInView extends GetView<SignInController> {
                       prefixIcon: Icon(Icons.email, color: Colors.grey),
                     ),
                   ),
+
                   SizedBox(height: 16),
 
                   // Password Input
@@ -109,23 +110,7 @@ class SignInView extends GetView<SignInController> {
                     ),
                   ),
 
-                  SizedBox(height: 4),
-
-                  // Forgot Password
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {},
-                      child: Text(
-                        'Lupa Kata Sandi?',
-                        style: TextStyle(
-                          color: AppColors.pink,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
+                  SizedBox(height: 24),
 
                   // Login Button
                   SizedBox(
