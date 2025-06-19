@@ -36,6 +36,7 @@ void main() async {
   final EnvironmentService envService = Get.find();
   await initHiveForFlutter();
   await GetStorage.init();
+
   // Initialize NotificationService
   await Get.putAsync<NotificationService>(() async {
     final service = NotificationService();
@@ -50,7 +51,8 @@ void main() async {
   Get.put<AuthService>(AuthService());
 
   Get.put(AuthController());
-  // Check authentication status
+
+  // Check if user is logged in by checking AuthService
   final authService = Get.find<AuthService>();
   final String initialRoute = authService.isLoggedIn ? '/home' : '/sign-in';
 

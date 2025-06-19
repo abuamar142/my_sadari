@@ -109,7 +109,6 @@ class SignInView extends GetView<SignInController> {
                       ),
                     ),
                   ),
-
                   SizedBox(height: 24), // Login Button
                   SizedBox(
                     width: double.infinity,
@@ -124,10 +123,13 @@ class SignInView extends GetView<SignInController> {
                             ),
                           ),
                         ),
-                        onPressed:
-                            controller.isLoading ? null : controller.login,
+                        onPressed: () {
+                          if (!controller.isLoading.value) {
+                            controller.login();
+                          }
+                        },
                         child:
-                            controller.isLoading
+                            controller.isLoading.value
                                 ? SizedBox(
                                   height: 20,
                                   width: 20,
