@@ -71,6 +71,11 @@ class HomeView extends GetView<HomeController> {
                 onTap: () => Get.toNamed(Routes.questionnaire),
               ),
               ListTile(
+                leading: Icon(Icons.schedule),
+                title: Text("Jadwal SADARI"),
+                onTap: () => Get.toNamed(Routes.schedule),
+              ),
+              ListTile(
                 leading: Icon(Icons.history),
                 title: Text("Riwayat Periksa"),
                 onTap: () => Get.toNamed(Routes.history),
@@ -127,7 +132,7 @@ class HomeView extends GetView<HomeController> {
         ),
         SizedBox(height: 20),
         MenuWidget(
-          title: 'JADWAL\nPEMERIKSAAN',
+          title: 'JADWAL\nSADARI',
           image: AppImages.menu3,
           route: () => Get.toNamed(Routes.schedule),
           color: AppColors.blue2,
