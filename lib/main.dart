@@ -7,6 +7,8 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 
 import 'app/controllers/auth_controller.dart';
 import 'app/routes/app_pages.dart';
+import 'core/services/api_service.dart';
+import 'core/services/auth_service.dart';
 import 'core/services/environment_service.dart';
 import 'core/services/notification_service.dart';
 
@@ -34,7 +36,6 @@ void main() async {
   final EnvironmentService envService = Get.find();
   await initHiveForFlutter();
   await GetStorage.init();
-
   // Initialize NotificationService
   await Get.putAsync<NotificationService>(() async {
     final service = NotificationService();
@@ -42,12 +43,18 @@ void main() async {
     return service;
   });
 
-  Get.put(AuthController());
+  // Initialize API Service
+  Get.put<ApiService>(ApiService());
 
-  final box = GetStorage();
+  // Initialize Auth Service
+  Get.put<AuthService>(AuthService());
+
+  Get.put(AuthController());
+  // Check authentication status
+  final authService = Get.find<AuthService>();
+  final String initialRoute = authService.isLoggedIn ? '/home' : '/sign-in';
+
   final cache = GraphQLCache();
-  final String initialRoute =
-      box.read('token') != null ? AppPages.initial : Routes.home;
 
   runApp(
     GraphQLProvider(

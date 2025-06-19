@@ -1,12 +1,32 @@
 import 'package:get/get.dart';
 
+import '../../../../core/services/auth_service.dart';
+import '../../../routes/app_pages.dart';
+
 class HomeController extends GetxController {
-  //TODO: Implement HomeController
+  late AuthService _authService;
 
   final count = 0.obs;
 
+  @override
+  void onInit() {
+    super.onInit();
+    _authService = Get.find<AuthService>();
+  }
 
+  /// Logout user and navigate to sign in
+  Future<void> logout() async {
+    await _authService.logout();
+    // Navigate to sign in page after logout
+    Get.offAllNamed(Routes.signIn);
+  }
 
+  /// Check if user is logged in
+  bool get isLoggedIn => _authService.isLoggedIn;
+
+  /// Get current user data
+  String get userName => _authService.currentUser?.name ?? 'Sahabat SADARI';
+  String get userEmail => _authService.currentUser?.email ?? 'guest@sadari.com';
 
   void increment() => count.value++;
 }

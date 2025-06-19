@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:my_sadari/app/modules/home/views/menu_widget.dart';
-import 'package:my_sadari/app/styles/app_colors.dart';
-import 'package:my_sadari/app/utils/app_images.dart';
 
 import '../../../routes/app_pages.dart';
+import '../../../styles/app_colors.dart';
+import '../../../utils/app_images.dart';
 import '../controllers/home_controller.dart';
+import 'menu_widget.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -53,17 +53,19 @@ class HomeView extends GetView<HomeController> {
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              UserAccountsDrawerHeader(
-                accountName: Text("Sahabat SADARI"),
-                accountEmail: Text("beta_sadari@example.com"),
-                currentAccountPicture: CircleAvatar(
-                  child: Icon(
-                    Icons.account_circle_rounded,
-                    size: 72,
-                    color: AppColors.pink,
+              Obx(
+                () => UserAccountsDrawerHeader(
+                  accountName: Text(controller.userName),
+                  accountEmail: Text(controller.userEmail),
+                  currentAccountPicture: CircleAvatar(
+                    child: Icon(
+                      Icons.account_circle_rounded,
+                      size: 72,
+                      color: AppColors.pink,
+                    ),
                   ),
+                  decoration: BoxDecoration(color: AppColors.pink),
                 ),
-                decoration: BoxDecoration(color: AppColors.pink),
               ),
               ListTile(
                 leading: Icon(Icons.question_mark_rounded),
@@ -80,15 +82,35 @@ class HomeView extends GetView<HomeController> {
                 title: Text("Riwayat Periksa"),
                 onTap: () => Get.toNamed(Routes.history),
               ),
-              ListTile(
-                leading: Icon(Icons.account_circle_outlined),
-                title: Text("Sign In"),
-                onTap: () => Get.toNamed(Routes.signIn),
-              ),
-              ListTile(
-                leading: Icon(Icons.account_circle_outlined),
-                title: Text("Sign Up"),
-                onTap: () => Get.toNamed(Routes.signUp),
+              // Show login/logout options based on auth status
+              Obx(
+                () =>
+                    controller.isLoggedIn
+                        ? ListTile(
+                          leading: Icon(Icons.logout, color: Colors.red),
+                          title: Text(
+                            "Logout",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                          onTap: () {
+                            Get.back(); // Close drawer first
+                            _showLogoutConfirmation();
+                          },
+                        )
+                        : Column(
+                          children: [
+                            ListTile(
+                              leading: Icon(Icons.login),
+                              title: Text("Sign In"),
+                              onTap: () => Get.toNamed(Routes.signIn),
+                            ),
+                            ListTile(
+                              leading: Icon(Icons.account_circle_outlined),
+                              title: Text("Sign Up"),
+                              onTap: () => Get.toNamed(Routes.signUp),
+                            ),
+                          ],
+                        ),
               ),
               ListTile(
                 leading: Icon(Icons.notifications_outlined),
@@ -110,9 +132,25 @@ class HomeView extends GetView<HomeController> {
     );
   }
 
-  // Widget _greeting() {
-  //   return
-  // }
+  /// Show logout confirmation dialog
+  void _showLogoutConfirmation() {
+    Get.dialog(
+      AlertDialog(
+        title: Text('Konfirmasi Logout'),
+        content: Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: Text('Batal')),
+          TextButton(
+            onPressed: () {
+              Get.back(); // Close dialog
+              controller.logout(); // Perform logout
+            },
+            child: Text('Logout', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _menu() {
     return Column(

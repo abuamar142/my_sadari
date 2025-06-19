@@ -9,21 +9,21 @@ class EnvironmentService extends GetxService {
   Future<EnvironmentService> init(String environment) async {
     switch (environment) {
       case 'dev':
-        appTitle = 'MyApp Dev';
+        appTitle = 'SADARI Dev';
         showDebugBanner = false;
-        baseUrl = 'https://api-kobessah.biscuit.my.id/';
+        baseUrl = 'https://sadari.sdnusabali.online';
         enableLogging = true;
         break;
       case 'stag':
-        appTitle = 'MyApp Stag';
+        appTitle = 'SADARI Stag';
         showDebugBanner = false;
-        baseUrl = 'https://api-kobessah.biscuit.my.id/';
+        baseUrl = 'https://sadari.sdnusabali.online';
         enableLogging = true;
         break;
       case 'prod':
-        appTitle = 'MyApp';
+        appTitle = 'SADARI';
         showDebugBanner = false;
-        baseUrl = 'https://api-kobessah.biscuit.my.id/';
+        baseUrl = 'https://sadari.sdnusabali.online';
         enableLogging = false;
         break;
       default:

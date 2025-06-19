@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId = "com.lmproject.my_sadari"
-        minSdk = flutter.minSdkVersion
+        minSdk = 23  // Updated for awesome_notifications compatibility
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

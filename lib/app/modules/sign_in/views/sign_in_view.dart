@@ -110,23 +110,37 @@ class SignInView extends GetView<SignInController> {
                     ),
                   ),
 
-                  SizedBox(height: 24),
-
-                  // Login Button
+                  SizedBox(height: 24), // Login Button
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.pink,
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppDimensions.radiusMedium,
+                    child: Obx(
+                      () => ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.pink,
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusMedium,
+                            ),
                           ),
                         ),
+                        onPressed:
+                            controller.isLoading ? null : controller.login,
+                        child:
+                            controller.isLoading
+                                ? SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.white,
+                                  ),
+                                )
+                                : Text(
+                                  'MASUK',
+                                  style: AppTextStyle.buttonText1,
+                                ),
                       ),
-                      onPressed: () {},
-                      child: Text('MASUK', style: AppTextStyle.buttonText1),
                     ),
                   ),
 

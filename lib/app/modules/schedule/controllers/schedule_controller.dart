@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -44,10 +45,71 @@ class ScheduleController extends GetxController {
     notificationStatus.value = await _notificationService.getPermissionStatus();
   }
 
-  // Check and request notification permission
+  // Check notification permission status without requesting
+  Future<void> checkNotificationPermissionStatus() async {
+    final hasPermission =
+        await _notificationService.isNotificationPermissionGranted();
+    await _loadNotificationStatus();
+
+    if (kDebugMode) {
+      print('🔔 Notification permission status: $hasPermission');
+    }
+  }
+
+  // Request notification permission when user explicitly wants it
+  Future<void> requestNotificationPermissions() async {
+    try {
+      final granted =
+          await _notificationService.requestNotificationPermissions();
+      await _loadNotificationStatus();
+
+      if (granted) {
+        Get.snackbar(
+          'Izin Diberikan',
+          'Notifikasi berhasil diaktifkan untuk pengingat SADARI',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+      } else {
+        Get.snackbar(
+          'Izin Ditolak',
+          'Silakan aktifkan notifikasi di pengaturan aplikasi untuk mendapatkan pengingat SADARI',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 4),
+          mainButton: TextButton(
+            onPressed: () {
+              Get.back();
+              _notificationService.openNotificationSettings();
+            },
+            child: const Text(
+              'Buka Pengaturan',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error requesting notification permission: $e');
+      }
+      Get.snackbar(
+        'Error',
+        'Terjadi kesalahan saat meminta izin notifikasi',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  // Legacy method - now just checks status
   Future<void> checkNotificationPermission() async {
     final hasPermission =
-        await _notificationService.ensureNotificationPermission();
+        await _notificationService.isNotificationPermissionGranted();
     await _loadNotificationStatus();
 
     if (!hasPermission) {
@@ -57,7 +119,7 @@ class ScheduleController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.orange,
         colorText: Colors.white,
-        duration: Duration(seconds: 4),
+        duration: const Duration(seconds: 4),
         mainButton: TextButton(
           onPressed: () {
             _notificationService.openNotificationSettings();
@@ -70,7 +132,7 @@ class ScheduleController extends GetxController {
 
   // Test notification
   Future<void> testNotification() async {
-    await _notificationService.testNotificationWithPermission();
+    await _notificationService.showTestNotification();
     await _loadNotificationStatus();
   }
 
@@ -383,6 +445,20 @@ class ScheduleController extends GetxController {
     await _notificationService.showPendingNotifications();
   }
 
+  // Debug notification system
+  Future<void> debugNotificationSystem() async {
+    await _notificationService.debugNotificationSystem();
+  }
+
+  // Debug methods for testing notifications
+  Future<void> checkBackgroundSetup() async {
+    await _notificationService.checkBackgroundNotificationSetup();
+  }
+
+  Future<void> showBackgroundTips() async {
+    await _notificationService.showBackgroundNotificationTips();
+  }
+
   // Show test notification bottom sheet
   void showTestNotificationBottomSheet() {
     Get.bottomSheet(
@@ -451,6 +527,14 @@ class ScheduleController extends GetxController {
             ),
             SizedBox(height: 12),
             _buildTestButton(
+              'Debug Sistem Notifikasi',
+              'Analisis mendalam sistem notifikasi',
+              Icons.bug_report,
+              Colors.red,
+              debugNotificationSystem,
+            ),
+            SizedBox(height: 12),
+            _buildTestButton(
               'Batalkan Test',
               'Batalkan semua test notifications',
               Icons.cancel,
@@ -478,7 +562,7 @@ class ScheduleController extends GetxController {
       child: Container(
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -486,7 +570,7 @@ class ScheduleController extends GetxController {
             Container(
               padding: EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: color, size: 20),

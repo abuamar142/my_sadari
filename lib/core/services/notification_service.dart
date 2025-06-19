@@ -1,20 +1,11 @@
-import 'dart:io';
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest_all.dart' as tz;
 
-/// NotificationService for SADARI reminder notifications
-///
-/// Current configuration uses default system sounds.
 class NotificationService extends GetxService {
-  static final FlutterLocalNotificationsPlugin
-  _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-  static const String _channelId = 'sadari_reminder_channel';
+  static const String _channelKey = 'sadari_reminder_channel';
   static const String _channelName = 'SADARI Reminder';
   static const String _channelDescription =
       'Pengingat untuk melakukan pemeriksaan SADARI';
@@ -23,413 +14,284 @@ class NotificationService extends GetxService {
   Future<void> onInit() async {
     super.onInit();
     await _initializeNotifications();
-    await _initializeTimezone();
-  }
-
-  Future<void> _initializeTimezone() async {
-    tz.initializeTimeZones();
-    tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
   }
 
   Future<void> _initializeNotifications() async {
-    // Android settings
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-
-    // iOS settings
-    const DarwinInitializationSettings initializationSettingsIOS =
-        DarwinInitializationSettings(
-          requestAlertPermission: true,
-          requestBadgePermission: true,
-          requestSoundPermission: true,
-        );
-
-    const InitializationSettings initializationSettings =
-        InitializationSettings(
-          android: initializationSettingsAndroid,
-          iOS: initializationSettingsIOS,
-        );
-
-    await _flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: _onNotificationTapped,
-    );
-
-    // Create notification channel for Android
-    if (Platform.isAndroid) {
-      await _createNotificationChannel();
-    }
-
-    // Request permissions
-    await _requestPermissions();
-  }
-
-  Future<void> _createNotificationChannel() async {
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      _channelId,
-      _channelName,
-      description: _channelDescription,
-      importance: Importance.high,
-      // Removed custom sound, using default system sound
-    );
-
-    await _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.createNotificationChannel(channel);
-  }
-
-  Future<void> _requestPermissions() async {
-    if (Platform.isAndroid) {
-      // Request notification permission for Android 13+
-      final permissionStatus = await Permission.notification.request();
-      if (permissionStatus.isDenied) {
-        if (kDebugMode) {
-          print('Notification permission denied');
-        }
-        _showPermissionDialog();
-      }
-
-      // Request exact alarm permission for Android 12+
-      await _requestExactAlarmPermission();
-    } else if (Platform.isIOS) {
-      // Request iOS permissions
-      final result = await _flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin
-          >()
-          ?.requestPermissions(alert: true, badge: true, sound: true);
-
-      if (result == false) {
-        _showPermissionDialog();
-      }
-    }
-  }
-
-  Future<void> _requestExactAlarmPermission() async {
-    try {
-      final exactAlarmStatus = await Permission.scheduleExactAlarm.status;
-
-      if (exactAlarmStatus.isDenied) {
-        // Show explanation dialog before requesting
-        await _showExactAlarmExplanationDialog();
-
-        // Request permission
-        final result = await Permission.scheduleExactAlarm.request();
-
-        if (result.isDenied) {
-          if (kDebugMode) {
-            print(
-              'Exact alarm permission denied - will use inexact scheduling',
-            );
-          }
-        }
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error requesting exact alarm permission: $e');
-      }
-    }
-  }
-
-  void _onNotificationTapped(NotificationResponse notificationResponse) {
-    final String? payload = notificationResponse.payload;
-    if (payload != null) {
-      // Handle notification tap
-      // Navigate to appropriate screen based on payload
-      Get.toNamed('/schedule');
-    }
-  }
-
-  // Schedule SADARI reminder notifications
-  Future<void> scheduleSadariReminders({
-    required String scheduleId,
-    required List<DateTime> reminderDates,
-    String? notes,
-  }) async {
-    try {
-      // Check and request permission first
-      final hasPermission = await ensureNotificationPermission();
-
-      if (!hasPermission) {
-        Get.snackbar(
-          'Izin Diperlukan',
-          'Notifikasi tidak dapat diatur tanpa izin. Anda dapat mengaktifkannya di pengaturan.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-          duration: Duration(seconds: 4),
-          mainButton: TextButton(
-            onPressed: () {
-              openNotificationSettings();
-            },
-            child: Text('Pengaturan', style: TextStyle(color: Colors.white)),
-          ),
-        );
-        return;
-      }
-
-      // Cancel any existing notifications for this schedule
-      await cancelScheduleNotifications(scheduleId);
-
-      for (int i = 0; i < reminderDates.length; i++) {
-        final reminderDate = reminderDates[i];
-        final notificationId = _generateNotificationId(scheduleId, i);
-
-        // Only schedule future notifications
-        if (reminderDate.isAfter(DateTime.now())) {
-          await _scheduleNotification(
-            notificationId: notificationId,
-            scheduledDate: reminderDate,
-            dayNumber: i + 7, // Day 7, 8, 9, 10
-            notes: notes,
-          );
-        }
-      }
-
-      // Show success message
-      Get.snackbar(
-        'Berhasil',
-        'Pengingat SADARI telah diatur untuk ${reminderDates.length} hari',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        duration: Duration(seconds: 3),
-      );
-
-      if (kDebugMode) {
-        print(
-          'Scheduled ${reminderDates.length} SADARI reminders for schedule: $scheduleId',
-        );
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error scheduling SADARI reminders: $e');
-      }
-      Get.snackbar(
-        'Error',
-        'Gagal mengatur reminder: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
-  }
-
-  Future<void> _scheduleNotification({
-    required int notificationId,
-    required DateTime scheduledDate,
-    required int dayNumber,
-    String? notes,
-  }) async {
-    // Schedule for 9:00 AM
-    final scheduledTime = DateTime(
-      scheduledDate.year,
-      scheduledDate.month,
-      scheduledDate.day,
-      9, // 9 AM
-      0, // 0 minutes
-    );
-
-    final tz.TZDateTime tzScheduledTime = tz.TZDateTime.from(
-      scheduledTime,
-      tz.local,
-    );
-
-    // Only schedule if the time is in the future
-    if (tzScheduledTime.isAfter(tz.TZDateTime.now(tz.local))) {
-      const NotificationDetails notificationDetails = NotificationDetails(
-        android: AndroidNotificationDetails(
-          _channelId,
-          _channelName,
+    await AwesomeNotifications().initialize(
+      null, // Use default app icon
+      [
+        NotificationChannel(
+          channelKey: _channelKey,
+          channelName: _channelName,
           channelDescription: _channelDescription,
-          importance: Importance.high,
-          priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
-          // Removed custom sound, using default system sound
+          defaultColor: const Color(0xFFE91E63), // Pink color for SADARI
+          ledColor: Colors.white,
+          importance:
+              NotificationImportance.High, // Changed back to High (not Max)
+          channelShowBadge: true,
           enableVibration: true,
+          enableLights: true,
           playSound: true,
+          criticalAlerts: false, // Changed to false for normal behavior
+          defaultRingtoneType: DefaultRingtoneType.Notification,
+          onlyAlertOnce: false, // Allow repeated notifications
+          locked: false, // Allow user to dismiss notifications
+          defaultPrivacy: NotificationPrivacy.Public, // Show on lock screen
         ),
-        iOS: DarwinNotificationDetails(
-          sound: 'default',
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
-      );
+      ],
+      debug: kDebugMode,
+      languageCode: 'id', // Indonesian language
+    );
 
-      final String title = _getNotificationTitle(dayNumber);
-      final String body = _getNotificationBody(dayNumber, notes);
+    // Set up listeners
+    _setListeners();
 
-      await _flutterLocalNotificationsPlugin.zonedSchedule(
-        notificationId,
-        title,
-        body,
-        tzScheduledTime,
-        notificationDetails,
-        androidScheduleMode: await _getScheduleMode(),
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        payload: 'sadari_reminder_$dayNumber',
-      );
+    // Don't automatically request permissions on initialization
+    // Permissions will be requested only when user explicitly allows them
+  }
 
+  void _setListeners() {
+    AwesomeNotifications().setListeners(
+      onActionReceivedMethod: _onActionReceivedMethod,
+      onNotificationCreatedMethod: _onNotificationCreatedMethod,
+      onNotificationDisplayedMethod: _onNotificationDisplayedMethod,
+      onDismissActionReceivedMethod: _onDismissActionReceivedMethod,
+    );
+  }
+
+  @pragma("vm:entry-point")
+  static Future<void> _onActionReceivedMethod(
+    ReceivedAction receivedAction,
+  ) async {
+    // Handle action buttons
+    if (receivedAction.buttonKeyPressed == 'MARK_DONE') {
+      // User marked SADARI as done - just dismiss notification
       if (kDebugMode) {
-        print(
-          'Scheduled notification $notificationId for ${tzScheduledTime.toString()}',
+        print('🎯 User marked SADARI as done - notification dismissed');
+      }
+      // Notification will be automatically dismissed
+      return;
+    }
+
+    if (receivedAction.buttonKeyPressed == 'OPEN_APP') {
+      // User wants to open app
+      if (kDebugMode) {
+        print('📱 User wants to open app from notification');
+      }
+      // Navigate to schedule page
+      final String? payload = receivedAction.payload?['route'];
+      if (payload != null) {
+        Get.toNamed(payload);
+      } else {
+        Get.toNamed('/schedule');
+      }
+      return;
+    }
+
+    // Handle normal tap (tapping notification body)
+    if (receivedAction.actionType == ActionType.Default) {
+      final String? payload = receivedAction.payload?['route'];
+      if (payload != null) {
+        // Navigate to specific route
+        Get.toNamed(payload);
+      } else {
+        // Default navigation to schedule page
+        Get.toNamed('/schedule');
+      }
+    }
+
+    if (kDebugMode) {
+      print('🔔 Notification action received: ${receivedAction.actionType}');
+      print('   📱 Button pressed: ${receivedAction.buttonKeyPressed}');
+      print('   📱 Payload: ${receivedAction.payload}');
+    }
+  }
+
+  @pragma("vm:entry-point")
+  static Future<void> _onNotificationCreatedMethod(
+    ReceivedNotification receivedNotification,
+  ) async {
+    if (kDebugMode) {
+      print('🔔 Notification created: ${receivedNotification.title}');
+    }
+  }
+
+  @pragma("vm:entry-point")
+  static Future<void> _onNotificationDisplayedMethod(
+    ReceivedNotification receivedNotification,
+  ) async {
+    if (kDebugMode) {
+      print('🔔 Notification displayed: ${receivedNotification.title}');
+    }
+  }
+
+  @pragma("vm:entry-point")
+  static Future<void> _onDismissActionReceivedMethod(
+    ReceivedAction receivedAction,
+  ) async {
+    if (kDebugMode) {
+      print('🔔 Notification dismissed: ${receivedAction.id}');
+    }
+  }
+
+  // Method untuk user secara eksplisit memberikan permission
+  Future<bool> requestNotificationPermissions() async {
+    try {
+      bool permissionGranted = false;
+
+      // Check if notification is already allowed
+      bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
+
+      if (!isAllowed) {
+        // Request basic notification permission
+        permissionGranted =
+            await AwesomeNotifications().requestPermissionToSendNotifications();
+      } else {
+        permissionGranted = true;
+      }
+
+      // If basic permission granted, request advanced permissions
+      if (permissionGranted) {
+        await AwesomeNotifications().requestPermissionToSendNotifications(
+          channelKey: _channelKey,
+          permissions: [
+            NotificationPermission.Alert,
+            NotificationPermission.Sound,
+            NotificationPermission.Badge,
+            NotificationPermission.Vibration,
+            NotificationPermission.PreciseAlarms,
+            NotificationPermission.CriticalAlert,
+            NotificationPermission.OverrideDnD,
+          ],
         );
       }
-    }
-  }
-
-  String _getNotificationTitle(int dayNumber) {
-    switch (dayNumber) {
-      case 7:
-        return '🌸 SADARI - Hari ke-7';
-      case 8:
-        return '🌸 SADARI - Hari ke-8';
-      case 9:
-        return '🌸 SADARI - Hari ke-9';
-      case 10:
-        return '🌸 SADARI - Hari ke-10';
-      default:
-        return '🌸 Reminder SADARI';
-    }
-  }
-
-  String _getNotificationBody(int dayNumber, String? notes) {
-    String baseMessage =
-        'Hari ini adalah waktu yang tepat untuk melakukan pemeriksaan SADARI. ';
-
-    switch (dayNumber) {
-      case 7:
-        baseMessage =
-            'Periode SADARI dimulai hari ini! Lakukan pemeriksaan payudara sendiri untuk kesehatan Anda. ';
-        break;
-      case 8:
-        baseMessage =
-            'Hari kedua periode SADARI. Tetap rutin melakukan pemeriksaan ya! ';
-        break;
-      case 9:
-        baseMessage =
-            'Hari ketiga periode SADARI. Jangan lewatkan pemeriksaan hari ini. ';
-        break;
-      case 10:
-        baseMessage =
-            'Hari terakhir periode SADARI. Selesaikan pemeriksaan dengan baik! ';
-        break;
-    }
-
-    if (notes != null && notes.isNotEmpty) {
-      baseMessage += '\n\nCatatan: $notes';
-    }
-
-    return '$baseMessage\n\nTap untuk membuka panduan SADARI.';
-  }
-
-  int _generateNotificationId(String scheduleId, int dayIndex) {
-    // Generate unique notification ID based on schedule ID and day index
-    return (scheduleId.hashCode + dayIndex).abs() % 2147483647;
-  }
-
-  // Cancel all notifications for a specific schedule
-  Future<void> cancelScheduleNotifications(String scheduleId) async {
-    try {
-      for (int i = 0; i < 4; i++) {
-        // 4 reminder days (7-10)
-        final notificationId = _generateNotificationId(scheduleId, i);
-        await _flutterLocalNotificationsPlugin.cancel(notificationId);
-      }
 
       if (kDebugMode) {
-        print('Cancelled notifications for schedule: $scheduleId');
+        print('🔔 Notification permission request result: $permissionGranted');
       }
+
+      return permissionGranted;
     } catch (e) {
       if (kDebugMode) {
-        print('Error cancelling notifications: $e');
+        print('❌ Error requesting notification permissions: $e');
       }
+      return false;
     }
   }
 
-  // Cancel all notifications
-  Future<void> cancelAllNotifications() async {
+  // Method untuk user secara eksplisit request battery optimization exemption
+  Future<bool> requestBatteryOptimizationExemption() async {
     try {
-      await _flutterLocalNotificationsPlugin.cancelAll();
-      if (kDebugMode) {
-        print('Cancelled all notifications');
+      final Permission batteryOptimization =
+          Permission.ignoreBatteryOptimizations;
+      final PermissionStatus status = await batteryOptimization.status;
+
+      if (status != PermissionStatus.granted) {
+        final PermissionStatus result = await batteryOptimization.request();
+        if (kDebugMode) {
+          print('🔋 Battery optimization exemption: $result');
+        }
+        return result == PermissionStatus.granted;
       }
+
+      return true; // Already granted
     } catch (e) {
       if (kDebugMode) {
-        print('Error cancelling all notifications: $e');
+        print('🔋 Error requesting battery optimization exemption: $e');
       }
+      return false;
     }
   }
 
-  /// Permission Management Methods
-  
-  // Get current permission status
   Future<Map<String, dynamic>> getPermissionStatus() async {
     try {
-      final notificationStatus = await Permission.notification.status;
-      final exactAlarmStatus = await Permission.scheduleExactAlarm.status;
-      
+      final isNotificationAllowed =
+          await AwesomeNotifications().isNotificationAllowed();
+
+      List<NotificationPermission> grantedPermissions = [];
+      List<NotificationPermission> deniedPermissions = [];
+
+      try {
+        grantedPermissions = await AwesomeNotifications().checkPermissionList(
+          channelKey: _channelKey,
+          permissions: [
+            NotificationPermission.Alert,
+            NotificationPermission.Sound,
+            NotificationPermission.Badge,
+            NotificationPermission.Vibration,
+            NotificationPermission.PreciseAlarms,
+          ],
+        );
+
+        deniedPermissions =
+            [
+                  NotificationPermission.Alert,
+                  NotificationPermission.Sound,
+                  NotificationPermission.Badge,
+                  NotificationPermission.Vibration,
+                  NotificationPermission.PreciseAlarms,
+                ]
+                .where((permission) => !grantedPermissions.contains(permission))
+                .toList();
+      } catch (e) {
+        if (kDebugMode) print('Error checking permissions: $e');
+      }
+
+      final hasPreciseAlarms = grantedPermissions.contains(
+        NotificationPermission.PreciseAlarms,
+      );
+
       return {
-        'isEnabled': notificationStatus.isGranted,
-        'hasExactAlarm': exactAlarmStatus.isGranted,
-        'scheduleMode': exactAlarmStatus.isGranted ? 'Tepat Waktu' : 'Perkiraan',
-        'notificationPermission': notificationStatus.name,
-        'exactAlarmPermission': exactAlarmStatus.name,
+        'isEnabled': isNotificationAllowed,
+        'hasExactAlarm': hasPreciseAlarms,
+        'scheduleMode': hasPreciseAlarms ? 'Tepat Waktu' : 'Perkiraan',
+        'grantedPermissions':
+            grantedPermissions.map((p) => p.toString()).toList(),
+        'deniedPermissions':
+            deniedPermissions.map((p) => p.toString()).toList(),
       };
     } catch (e) {
-      if (kDebugMode) {
-        print('Error getting permission status: $e');
-      }
+      if (kDebugMode) print('Error getting permission status: $e');
       return {
         'isEnabled': false,
         'hasExactAlarm': false,
         'scheduleMode': 'Tidak Diketahui',
-        'notificationPermission': 'unknown',
-        'exactAlarmPermission': 'unknown',
+        'grantedPermissions': [],
+        'deniedPermissions': [],
       };
     }
   }
 
-  // Ensure notification permission is granted
-  Future<bool> ensureNotificationPermission() async {
+  // Check notification permission status without requesting
+  Future<bool> isNotificationPermissionGranted() async {
     try {
-      final notificationStatus = await Permission.notification.status;
-      
-      if (notificationStatus.isGranted) {
-        return true;
-      }
-      
-      if (notificationStatus.isDenied) {
-        final result = await Permission.notification.request();
-        return result.isGranted;
-      }
-      
-      if (notificationStatus.isPermanentlyDenied) {
-        _showPermissionDialog();
-        return false;
-      }
-      
-      return false;
+      return await AwesomeNotifications().isNotificationAllowed();
     } catch (e) {
-      if (kDebugMode) {
-        print('Error ensuring notification permission: $e');
-      }
+      if (kDebugMode) print('Error checking notification permission: $e');
       return false;
     }
   }
 
-  // Open notification settings
+  // Legacy method - now only requests permission when explicitly called
+  Future<bool> ensureNotificationPermission() async {
+    try {
+      final isAllowed = await AwesomeNotifications().isNotificationAllowed();
+      if (isAllowed) return true;
+
+      // Now this only checks, doesn't auto-request
+      // Permission request should be done via requestNotificationPermissions()
+      return false;
+    } catch (e) {
+      if (kDebugMode) print('Error checking notification permission: $e');
+      return false;
+    }
+  }
+
   Future<void> openNotificationSettings() async {
     try {
       await openAppSettings();
     } catch (e) {
-      if (kDebugMode) {
-        print('Error opening notification settings: $e');
-      }
+      if (kDebugMode) print('Error opening notification settings: $e');
       Get.snackbar(
         'Error',
         'Tidak dapat membuka pengaturan',
@@ -439,184 +301,79 @@ class NotificationService extends GetxService {
     }
   }
 
-  // Test notification with permission check
-  Future<void> testNotificationWithPermission() async {
-    final hasPermission = await ensureNotificationPermission();
-    
-    if (hasPermission) {
-      await showTestNotification();
-      Get.snackbar(
-        'Test Berhasil',
-        'Test notification berhasil dikirim',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-    } else {
-      Get.snackbar(
-        'Permission Required',
-        'Izin notifikasi diperlukan untuk testing',
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
-    }
-  }
-
-  // Get pending notifications
-  Future<List<PendingNotificationRequest>> getPendingNotifications() async {
-    try {
-      return await _flutterLocalNotificationsPlugin.pendingNotificationRequests();
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error getting pending notifications: $e');
-      }
-      return [];
-    }
-  }
-
-  /// Helper Methods
-  
-  // Get schedule mode based on exact alarm permission
-  Future<AndroidScheduleMode> _getScheduleMode() async {
-    try {
-      final exactAlarmStatus = await Permission.scheduleExactAlarm.status;
-      return exactAlarmStatus.isGranted
-          ? AndroidScheduleMode.exactAllowWhileIdle
-          : AndroidScheduleMode.inexactAllowWhileIdle;
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error getting schedule mode: $e');
-      }
-      return AndroidScheduleMode.inexactAllowWhileIdle;
-    }
-  }
-
-  // Show permission dialog
-  void _showPermissionDialog() {
-    Get.dialog(
-      AlertDialog(
-        title: Text('Izin Notifikasi Diperlukan'),
-        content: Text(
-          'Aplikasi memerlukan izin notifikasi untuk mengirim pengingat SADARI. '
-          'Silakan aktifkan di pengaturan aplikasi.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('Nanti'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Get.back();
-              openNotificationSettings();
-            },
-            child: Text('Buka Pengaturan'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Show exact alarm explanation dialog
-  Future<void> _showExactAlarmExplanationDialog() async {
-    await Get.dialog(
-      AlertDialog(
-        title: Text('Izin Alarm Tepat Waktu'),
-        content: Text(
-          'Untuk memastikan pengingat SADARI dikirim tepat waktu, aplikasi memerlukan izin "Schedule exact alarms". '
-          'Tanpa izin ini, pengingat mungkin tertunda.\n\n'
-          'Apakah Anda ingin mengaktifkannya?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('Tidak'),
-          ),
-          ElevatedButton(
-            onPressed: () => Get.back(),
-            child: Text('Ya, Aktifkan'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Testing Methods for Development
-  /// These methods help you test notifications without waiting for actual schedule
-
-  // Test immediate notification (for basic functionality test)
   Future<void> showTestNotification() async {
-    const NotificationDetails notificationDetails = NotificationDetails(
-      android: AndroidNotificationDetails(
-        _channelId,
-        _channelName,
-        channelDescription: _channelDescription,
-        importance: Importance.high,
-        priority: Priority.high,
-        icon: '@mipmap/ic_launcher',
-      ),
-      iOS: DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-      ),
-    );
+    try {
+      await AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: 0,
+          channelKey: _channelKey,
+          title: '🩺 Test SADARI Reminder',
+          body:
+              'Ini adalah test notification untuk reminder SADARI. Tap untuk membuka aplikasi.',
+          category: NotificationCategory.Reminder,
+          wakeUpScreen: true,
+          payload: {'route': '/schedule', 'type': 'test'},
+        ),
+      );
 
-    await _flutterLocalNotificationsPlugin.show(
-      0,
-      '🌸 Test SADARI Reminder',
-      'Ini adalah test notification untuk reminder SADARI. Tap untuk membuka aplikasi.',
-      notificationDetails,
-      payload: 'test_notification',
-    );
+      if (kDebugMode) print('✅ Test notification sent successfully');
+    } catch (e) {
+      if (kDebugMode) print('❌ Error sending test notification: $e');
+      rethrow;
+    }
   }
 
-  // Schedule a test notification for immediate delivery (1-2 seconds)
   Future<void> scheduleTestNotificationNow() async {
     try {
-      final hasPermission = await ensureNotificationPermission();
+      final hasPermission = await isNotificationPermissionGranted();
       if (!hasPermission) {
         Get.snackbar(
-          'Permission Required',
-          'Notification permission is needed for testing',
+          'Izin Notifikasi Diperlukan',
+          'Silakan aktifkan notifikasi terlebih dahulu di pengaturan aplikasi',
           backgroundColor: Colors.orange,
           colorText: Colors.white,
+          duration: const Duration(seconds: 4),
+          mainButton: TextButton(
+            onPressed: () async {
+              Get.back(); // Close snackbar
+              final granted = await requestNotificationPermissions();
+              if (granted) {
+                scheduleTestNotificationNow(); // Retry after permission granted
+              }
+            },
+            child: const Text(
+              'Aktifkan',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
         );
         return;
       }
 
-      // Schedule for 2 seconds from now
-      final scheduledTime = tz.TZDateTime.now(tz.local).add(Duration(seconds: 2));
-      final scheduleMode = await _getScheduleMode();
-
-      const NotificationDetails notificationDetails = NotificationDetails(
-        android: AndroidNotificationDetails(
-          _channelId,
-          _channelName,
-          channelDescription: _channelDescription,
-          importance: Importance.high,
-          priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
-          enableVibration: true,
-          playSound: true,
+      final scheduledTime = DateTime.now().add(const Duration(seconds: 2));
+      await AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: 999,
+          channelKey: _channelKey,
+          title: '🩺 Test SADARI - Hari ke-7',
+          body:
+              'Test: Periode SADARI dimulai hari ini! Lakukan pemeriksaan payudara sendiri untuk kesehatan Anda.\n\nTap untuk membuka panduan SADARI.',
+          category: NotificationCategory.Reminder,
+          wakeUpScreen: false, // Don't force wake
+          fullScreenIntent: false, // Don't force full screen
+          criticalAlert: false, // Normal notification
+          autoDismissible: true, // Allow dismiss
+          showWhen: true,
+          payload: {'route': '/schedule', 'type': 'test_scheduled'},
+          locked: false, // Allow swipe to dismiss
+          displayOnForeground: true,
+          displayOnBackground: true,
         ),
-        iOS: DarwinNotificationDetails(
-          sound: 'default',
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
+        schedule: NotificationCalendar.fromDate(
+          date: scheduledTime,
+          preciseAlarm: true,
+          allowWhileIdle: true,
         ),
-      );
-
-      await _flutterLocalNotificationsPlugin.zonedSchedule(
-        999, // Special ID for test
-        '🌸 Test SADARI - Hari ke-7',
-        'Test: Periode SADARI dimulai hari ini! Lakukan pemeriksaan payudara sendiri untuk kesehatan Anda.\n\nTap untuk membuka panduan SADARI.',
-        scheduledTime,
-        notificationDetails,
-        androidScheduleMode: scheduleMode,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        payload: 'test_sadari_reminder',
       );
 
       Get.snackbar(
@@ -624,12 +381,11 @@ class NotificationService extends GetxService {
         'Test notification akan muncul dalam 2 detik',
         backgroundColor: Colors.blue,
         colorText: Colors.white,
-        duration: Duration(seconds: 3),
+        duration: const Duration(seconds: 3),
       );
 
-      if (kDebugMode) {
-        print('Test notification scheduled for: ${scheduledTime.toString()}');
-      }
+      if (kDebugMode)
+        print('✅ Test notification scheduled for: ${scheduledTime.toString()}');
     } catch (e) {
       Get.snackbar(
         'Test Failed',
@@ -637,62 +393,67 @@ class NotificationService extends GetxService {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-      if (kDebugMode) {
-        print('Error scheduling test notification: $e');
-      }
+      if (kDebugMode) print('❌ Error scheduling test notification: $e');
     }
   }
 
-  // Schedule test notifications for different SADARI days (for next few minutes)
   Future<void> scheduleTestSadariSequence() async {
     try {
-      final hasPermission = await ensureNotificationPermission();
+      final hasPermission = await isNotificationPermissionGranted();
       if (!hasPermission) {
         Get.snackbar(
-          'Permission Required',
-          'Notification permission is needed for testing',
+          'Izin Notifikasi Diperlukan',
+          'Silakan aktifkan notifikasi terlebih dahulu untuk testing',
           backgroundColor: Colors.orange,
           colorText: Colors.white,
+          duration: const Duration(seconds: 4),
+          mainButton: TextButton(
+            onPressed: () async {
+              Get.back(); // Close snackbar
+              final granted = await requestNotificationPermissions();
+              if (granted) {
+                scheduleTestSadariSequence(); // Retry after permission granted
+              }
+            },
+            child: const Text(
+              'Aktifkan',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
         );
         return;
       }
 
-      final scheduleMode = await _getScheduleMode();
-      
-      // Schedule notifications for next 4 minutes (representing day 7, 8, 9, 10)
       for (int i = 0; i < 4; i++) {
-        final dayNumber = i + 7; // Day 7, 8, 9, 10
-        final scheduledTime = tz.TZDateTime.now(tz.local).add(Duration(minutes: i + 1));
-        
-        const NotificationDetails notificationDetails = NotificationDetails(
-          android: AndroidNotificationDetails(
-            _channelId,
-            _channelName,
-            channelDescription: _channelDescription,
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-            enableVibration: true,
-            playSound: true,
+        final dayNumber = i + 7;
+        final scheduledTime = DateTime.now().add(Duration(minutes: i + 1));
+        await AwesomeNotifications().createNotification(
+          content: NotificationContent(
+            id: 990 + i,
+            channelKey: _channelKey,
+            title: '🩺 SADARI - Hari ke-$dayNumber',
+            body:
+                'TEST: Periode SADARI hari ke-$dayNumber! Lakukan pemeriksaan payudara sendiri untuk kesehatan Anda.',
+            category: NotificationCategory.Reminder,
+            wakeUpScreen: false,
+            fullScreenIntent: false,
+            criticalAlert: false,
+            autoDismissible: true,
+            showWhen: true,
+            payload: {
+              'route': '/schedule',
+              'type': 'test_sequence',
+              'day': dayNumber.toString(),
+            },
+            locked: false,
+            displayOnForeground: true,
+            displayOnBackground: true,
           ),
-          iOS: DarwinNotificationDetails(
-            sound: 'default',
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
+          schedule: NotificationCalendar.fromDate(
+            date: scheduledTime,
+            preciseAlarm: true,
+            allowWhileIdle: true,
           ),
-        );
-
-        await _flutterLocalNotificationsPlugin.zonedSchedule(
-          990 + i, // Special IDs for test sequence
-          _getNotificationTitle(dayNumber),
-          'TEST: ${_getNotificationBody(dayNumber, 'Ini adalah test notification untuk development')}',
-          scheduledTime,
-          notificationDetails,
-          androidScheduleMode: scheduleMode,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
-          payload: 'test_sadari_day_$dayNumber',
         );
       }
 
@@ -701,12 +462,10 @@ class NotificationService extends GetxService {
         'Test notifications akan muncul dalam 1-4 menit berikutnya',
         backgroundColor: Colors.green,
         colorText: Colors.white,
-        duration: Duration(seconds: 5),
+        duration: const Duration(seconds: 5),
       );
 
-      if (kDebugMode) {
-        print('Test sequence scheduled for next 4 minutes');
-      }
+      if (kDebugMode) print('✅ Test sequence scheduled for next 4 minutes');
     } catch (e) {
       Get.snackbar(
         'Test Failed',
@@ -714,21 +473,15 @@ class NotificationService extends GetxService {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-      if (kDebugMode) {
-        print('Error scheduling test sequence: $e');
-      }
+      if (kDebugMode) print('❌ Error scheduling test sequence: $e');
     }
   }
 
-  // Cancel all test notifications
   Future<void> cancelTestNotifications() async {
     try {
-      // Cancel immediate test
-      await _flutterLocalNotificationsPlugin.cancel(999);
-      
-      // Cancel test sequence
+      await AwesomeNotifications().cancel(999);
       for (int i = 0; i < 4; i++) {
-        await _flutterLocalNotificationsPlugin.cancel(990 + i);
+        await AwesomeNotifications().cancel(990 + i);
       }
 
       Get.snackbar(
@@ -737,18 +490,26 @@ class NotificationService extends GetxService {
         backgroundColor: Colors.blue,
         colorText: Colors.white,
       );
+
+      if (kDebugMode) print('✅ All test notifications cancelled');
     } catch (e) {
-      if (kDebugMode) {
-        print('Error cancelling test notifications: $e');
-      }
+      if (kDebugMode) print('❌ Error cancelling test notifications: $e');
     }
   }
 
-  // Debug: Show all pending notifications
+  Future<List<NotificationModel>> getPendingNotifications() async {
+    try {
+      return await AwesomeNotifications().listScheduledNotifications();
+    } catch (e) {
+      if (kDebugMode) print('❌ Error getting pending notifications: $e');
+      return [];
+    }
+  }
+
   Future<void> showPendingNotifications() async {
     try {
       final pendingNotifications = await getPendingNotifications();
-      
+
       if (pendingNotifications.isEmpty) {
         Get.snackbar(
           'No Pending Notifications',
@@ -761,35 +522,39 @@ class NotificationService extends GetxService {
 
       String notificationsList = 'Pending notifications:\n';
       for (var notification in pendingNotifications) {
-        notificationsList += '• ID: ${notification.id} - ${notification.title}\n';
+        notificationsList +=
+            '• ID: ${notification.content?.id} - ${notification.content?.title}\n';
+        if (notification.content?.payload != null) {
+          notificationsList += '  Payload: ${notification.content?.payload}\n';
+        }
       }
 
       Get.dialog(
         AlertDialog(
           title: Text('Pending Notifications (${pendingNotifications.length})'),
-          content: SingleChildScrollView(
-            child: Text(notificationsList),
-          ),
+          content: SingleChildScrollView(child: Text(notificationsList)),
           actions: [
-            TextButton(
-              onPressed: () => Get.back(),
-              child: Text('Tutup'),
-            ),
+            TextButton(onPressed: () => Get.back(), child: const Text('Tutup')),
             ElevatedButton(
               onPressed: () {
                 Get.back();
                 cancelAllNotifications();
               },
-              child: Text('Cancel All'),
+              child: const Text('Cancel All'),
             ),
           ],
         ),
       );
 
       if (kDebugMode) {
-        print('Pending notifications: ${pendingNotifications.length}');
+        print('📋 Pending notifications: ${pendingNotifications.length}');
         for (var notification in pendingNotifications) {
-          print('- ID: ${notification.id}, Title: ${notification.title}');
+          print(
+            '   • ID: ${notification.content?.id}, Title: ${notification.content?.title}',
+          );
+          if (notification.content?.payload != null) {
+            print('     Payload: ${notification.content?.payload}');
+          }
         }
       }
     } catch (e) {
@@ -800,5 +565,410 @@ class NotificationService extends GetxService {
         colorText: Colors.white,
       );
     }
+  }
+
+  Future<void> scheduleSadariReminders({
+    required String scheduleId,
+    required List<DateTime> reminderDates,
+    String? notes,
+  }) async {
+    try {
+      if (kDebugMode)
+        print(
+          '🔔 Starting to schedule SADARI reminders for $scheduleId with ${reminderDates.length} dates',
+        ); // Pastikan permission sudah ada
+      final hasPermission = await isNotificationPermissionGranted();
+      if (!hasPermission) {
+        if (kDebugMode)
+          print('❌ No notification permission - showing user-friendly message');
+
+        Get.snackbar(
+          'Izin Notifikasi Diperlukan',
+          'Untuk menjadwalkan pengingat SADARI, aplikasi memerlukan izin notifikasi',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 5),
+          mainButton: TextButton(
+            onPressed: () async {
+              Get.back(); // Close snackbar
+              await requestNotificationPermissions();
+            },
+            child: const Text(
+              'Berikan Izin',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        );
+
+        throw Exception('Notification permission required');
+      }
+
+      // Cancel notifikasi lama untuk schedule ini
+      await cancelScheduleNotifications(scheduleId);
+
+      for (int i = 0; i < reminderDates.length; i++) {
+        final reminderDate = reminderDates[i];
+        final dayNumber = i + 7; // Hari ke-7, 8, 9, 10
+        final notificationId = _generateNotificationId(scheduleId, i);
+
+        final now = DateTime.now();
+
+        if (kDebugMode) {
+          print('⏰ Scheduling notification $notificationId for day $dayNumber');
+          print('   📅 Scheduled time: ${reminderDate.toString()}');
+          print('   🕐 Current time: ${now.toString()}');
+          print(
+            '   ⏱️ Time difference: ${reminderDate.difference(now).inMinutes} minutes',
+          );
+        }
+
+        // Skip jika waktu sudah lewat
+        if (reminderDate.isBefore(now)) {
+          if (kDebugMode) {
+            print('   ⚠️ Skipping past date: ${reminderDate.toString()}');
+          }
+          continue;
+        }
+
+        final title = '🩺 SADARI - Hari ke-$dayNumber';
+        final body =
+            'Periode SADARI hari ke-$dayNumber! Lakukan pemeriksaan payudara sendiri untuk kesehatan Anda.\n\nTap untuk membuka panduan SADARI.${notes != null ? '\n\nCatatan: $notes' : ''}';
+        final payload = {
+          'route': '/schedule',
+          'type': 'sadari_reminder',
+          'scheduleId': scheduleId,
+          'day': dayNumber.toString(),
+        };
+        try {
+          await AwesomeNotifications().createNotification(
+            content: NotificationContent(
+              id: notificationId,
+              channelKey: _channelKey,
+              title: title,
+              body: body,
+              category: NotificationCategory.Reminder,
+              wakeUpScreen: false, // Don't force wake screen
+              fullScreenIntent: false, // Don't force full screen
+              criticalAlert: false, // Normal notification
+              autoDismissible: true, // Allow auto dismiss
+              showWhen: true, // Show time
+              payload: payload,
+              locked: false, // Allow swipe dismissal
+              displayOnForeground: true, // Show when app is open
+              displayOnBackground: true, // Show when app is closed
+            ),
+            schedule: NotificationCalendar.fromDate(
+              date: reminderDate,
+              preciseAlarm: true, // Use precise alarm for exact timing
+              allowWhileIdle: true, // Allow while device is idle
+            ),
+            actionButtons: [
+              NotificationActionButton(
+                key: 'MARK_DONE',
+                label: 'Selesai',
+                actionType:
+                    ActionType.DismissAction, // Dismiss the notification
+              ),
+              NotificationActionButton(
+                key: 'OPEN_APP',
+                label: 'Buka App',
+                actionType: ActionType.Default,
+              ),
+            ],
+          );
+
+          if (kDebugMode)
+            print('   ✅ Successfully scheduled notification $notificationId');
+        } catch (e) {
+          if (kDebugMode)
+            print('   ❌ Failed to schedule notification $notificationId: $e');
+          rethrow;
+        }
+      }
+
+      // Verifikasi berapa notification yang berhasil dijadwalkan
+      final pendingNotifications = await getPendingNotifications();
+      final scheduleNotifications =
+          pendingNotifications
+              .where((n) => n.content?.payload?['scheduleId'] == scheduleId)
+              .toList();
+
+      if (kDebugMode) {
+        print('🎯 Schedule completed for $scheduleId');
+        print(
+          '   📊 Total pending notifications: ${pendingNotifications.length}',
+        );
+        print(
+          '   📋 Notifications for this schedule: ${scheduleNotifications.length}',
+        );
+        for (var notification in scheduleNotifications) {
+          print(
+            '     • ID: ${notification.content?.id} - ${notification.content?.title}',
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) print('💥 Error scheduling SADARI reminders: $e');
+      rethrow;
+    }
+  }
+
+  int _generateNotificationId(String scheduleId, int index) {
+    // Generate unique ID berdasarkan schedule ID dan index
+    final baseId = scheduleId.hashCode.abs() % 100000;
+    return baseId +
+        index +
+        1000; // Offset untuk avoid conflict dengan test notifications
+  }
+
+  Future<void> cancelScheduleNotifications(String scheduleId) async {
+    try {
+      if (kDebugMode)
+        print('🗑️ Cancelling notifications for schedule: $scheduleId');
+
+      final pendingNotifications = await getPendingNotifications();
+      final scheduleNotifications =
+          pendingNotifications
+              .where((n) => n.content?.payload?['scheduleId'] == scheduleId)
+              .toList();
+
+      if (kDebugMode)
+        print(
+          '   📋 Found ${scheduleNotifications.length} notifications to cancel',
+        );
+
+      for (var notification in scheduleNotifications) {
+        await AwesomeNotifications().cancel(notification.content?.id ?? 0);
+        if (kDebugMode)
+          print('   ✅ Cancelled notification ID: ${notification.content?.id}');
+      }
+
+      if (kDebugMode)
+        print('🎯 Schedule cancellation completed for $scheduleId');
+    } catch (e) {
+      if (kDebugMode)
+        print('💥 Error cancelling notifications for schedule $scheduleId: $e');
+    }
+  }
+
+  Future<void> cancelAllNotifications() async {
+    try {
+      await AwesomeNotifications().cancelAll();
+      if (kDebugMode) print('🗑️ Cancelled all notifications');
+    } catch (e) {
+      if (kDebugMode) print('💥 Error cancelling all notifications: $e');
+    }
+  }
+
+  /// Debug method untuk verifikasi sistem notifikasi
+  Future<void> debugNotificationSystem() async {
+    if (kDebugMode) {
+      print('🔍 ==> DEBUGGING AWESOME NOTIFICATION SYSTEM <==');
+
+      // 1. Cek permission status
+      final permissionStatus = await getPermissionStatus();
+      print('📱 Permission Status:');
+      print('   • Notification Allowed: ${permissionStatus['isEnabled']}');
+      print('   • Precise Alarms: ${permissionStatus['hasExactAlarm']}');
+      print('   • Schedule Mode: ${permissionStatus['scheduleMode']}');
+      print('   • Granted: ${permissionStatus['grantedPermissions']}');
+      print('   • Denied: ${permissionStatus['deniedPermissions']}');
+
+      // 2. Cek timezone
+      final now = DateTime.now();
+      print('🌍 Timezone Info:');
+      print('   • Current Time: ${now.toString()}');
+      print('   • UTC Offset: ${now.timeZoneOffset}');
+
+      // 3. Cek pending notifications
+      final pending = await getPendingNotifications();
+      print('📋 Pending Notifications: ${pending.length}');
+      for (var notification in pending) {
+        print(
+          '   • ID: ${notification.content?.id} - ${notification.content?.title}',
+        );
+      }
+
+      // 4. Test immediate notification
+      print('🧪 Testing immediate notification...');
+      try {
+        await showTestNotification();
+        print('   ✅ Immediate notification sent successfully');
+      } catch (e) {
+        print('   ❌ Immediate notification failed: $e');
+      }
+
+      // 5. Test scheduled notification (5 seconds)
+      print('🧪 Testing scheduled notification (5 seconds)...');
+      try {
+        final testTime = DateTime.now().add(const Duration(seconds: 5));
+
+        await AwesomeNotifications().createNotification(
+          content: NotificationContent(
+            id: 9999,
+            channelKey: _channelKey,
+            title: '🔬 Debug Test',
+            body: 'Debug scheduled notification - should appear in 5 seconds',
+            category: NotificationCategory.Reminder,
+            wakeUpScreen: true,
+            payload: {'route': '/schedule', 'type': 'debug_test'},
+          ),
+          schedule: NotificationCalendar.fromDate(date: testTime),
+        );
+
+        print('   ✅ Scheduled notification set for: ${testTime.toString()}');
+
+        // Verify it's in pending list
+        final pendingAfter = await getPendingNotifications();
+        final debugNotification =
+            pendingAfter.where((n) => n.content?.id == 9999).toList();
+        print('   📋 Found in pending list: ${debugNotification.isNotEmpty}');
+      } catch (e) {
+        print('   ❌ Scheduled notification failed: $e');
+      }
+
+      print('🔍 ==> DEBUG COMPLETE <==');
+    }
+  }
+
+  /// Method untuk membantu troubleshooting notifikasi background
+  Future<void> checkBackgroundNotificationSetup() async {
+    if (kDebugMode) {
+      print('🔍 ==> CHECKING BACKGROUND NOTIFICATION SETUP <==');
+
+      // 1. Check if app is allowed to run in background
+      try {
+        final isIgnoringBatteryOptimizations =
+            await Permission.ignoreBatteryOptimizations.status;
+        print('🔋 Battery Optimization: $isIgnoringBatteryOptimizations');
+        if (isIgnoringBatteryOptimizations != PermissionStatus.granted) {
+          print('⚠️ App may be killed by battery optimization!');
+          print('   Requesting battery optimization exemption...');
+          await requestBatteryOptimizationExemption();
+        }
+      } catch (e) {
+        print('❌ Error checking battery optimization: $e');
+      }
+
+      // 2. Check notification channel settings
+      try {
+        final isAllowed = await AwesomeNotifications().isNotificationAllowed();
+        print('📱 Notification Permission: $isAllowed');
+
+        final channels =
+            await AwesomeNotifications().listScheduledNotifications();
+        print('📋 Scheduled Notifications: ${channels.length}');
+
+        for (var notification in channels) {
+          print(
+            '   • ID: ${notification.content?.id} - ${notification.content?.title}',
+          );
+          if (notification.schedule != null) {
+            print('     ⏰ Schedule: ${notification.schedule.toString()}');
+          }
+        }
+      } catch (e) {
+        print('❌ Error checking notifications: $e');
+      }
+
+      // 3. Test immediate notification
+      print('🧪 Testing immediate notification...');
+      try {
+        await AwesomeNotifications().createNotification(
+          content: NotificationContent(
+            id: 99999,
+            channelKey: _channelKey,
+            title: '🔧 Background Test',
+            body:
+                'If you see this, immediate notifications work! Check for scheduled ones next.',
+            category: NotificationCategory.Status,
+            wakeUpScreen: true,
+            criticalAlert: true,
+          ),
+        );
+        print('✅ Immediate notification sent');
+      } catch (e) {
+        print('❌ Immediate notification failed: $e');
+      }
+
+      // 4. Test scheduled notification (30 seconds from now)
+      print('⏰ Testing scheduled notification...');
+      try {
+        final testTime = DateTime.now().add(const Duration(seconds: 30));
+        await AwesomeNotifications().createNotification(
+          content: NotificationContent(
+            id: 99998,
+            channelKey: _channelKey,
+            title: '⏰ Background Schedule Test',
+            body:
+                'This tests if scheduled notifications work when app is closed. Close the app now!',
+            category: NotificationCategory.Status,
+            wakeUpScreen: true,
+            fullScreenIntent: true,
+            criticalAlert: true,
+          ),
+          schedule: NotificationCalendar.fromDate(
+            date: testTime,
+            preciseAlarm: true,
+            allowWhileIdle: true,
+          ),
+        );
+        print('✅ Scheduled notification set for: $testTime');
+        print('🔥 CLOSE THE APP NOW to test background delivery!');
+      } catch (e) {
+        print('❌ Scheduled notification failed: $e');
+      }
+    }
+  }
+
+  /// Method untuk menampilkan tips troubleshooting kepada user
+  Future<void> showBackgroundNotificationTips() async {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('🔧 Tips Notifikasi Background'),
+        content: const SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Jika notifikasi tidak muncul saat aplikasi tertutup:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
+              Text('📱 1. Buka Settings > Apps > My SADARI'),
+              Text('🔋 2. Pilih "Battery" > Unrestricted'),
+              Text('🔔 3. Pilih "Notifications" > Allow all'),
+              Text('⏰ 4. Enable "Schedule exact alarms"'),
+              Text('🚫 5. Disable "Remove permissions if app unused"'),
+              SizedBox(height: 10),
+              Text(
+                'Untuk beberapa brand HP:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text('• Xiaomi: Security > Permissions > Autostart'),
+              Text('• Huawei: Settings > App launch > Manual manage'),
+              Text(
+                '• Samsung: Settings > Device care > Battery > App power management',
+              ),
+              Text('• Oppo/OnePlus: Settings > Battery > Battery optimization'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Mengerti'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              checkBackgroundNotificationSetup();
+            },
+            child: const Text('Test Sekarang'),
+          ),
+        ],
+      ),
+    );
   }
 }
