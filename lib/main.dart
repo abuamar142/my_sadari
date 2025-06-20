@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
-import 'app/controllers/auth_controller.dart';
 import 'app/routes/app_pages.dart';
 import 'core/services/api_service.dart';
 import 'core/services/auth_service.dart';
@@ -50,11 +49,12 @@ void main() async {
   // Initialize Auth Service
   Get.put<AuthService>(AuthService());
 
-  Get.put(AuthController());
-
-  // Check if user is logged in by checking AuthService
+  // Check if user is logged in by checking AuthService (only in production)
   final authService = Get.find<AuthService>();
-  final String initialRoute = authService.isLoggedIn ? '/home' : '/sign-in';
+  final String initialRoute =
+      environment == 'prod'
+          ? (authService.isLoggedIn ? '/home' : '/sign-in')
+          : '/home'; // Dev and staging go directly to home
 
   final cache = GraphQLCache();
 
