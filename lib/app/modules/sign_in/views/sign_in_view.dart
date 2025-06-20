@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../../styles/app_colors.dart';
 import '../../../styles/app_dimension.dart';
 import '../../../styles/app_text_style.dart';
+import '../../../widgets/app_text_field.dart';
 import '../controllers/sign_in_controller.dart';
 
 class SignInView extends GetView<SignInController> {
@@ -56,58 +57,23 @@ class SignInView extends GetView<SignInController> {
                     style: AppTextStyle.caption.copyWith(color: Colors.grey),
                   ),
 
-                  SizedBox(height: 24),
-
-                  // Email Input
-                  TextField(
+                  SizedBox(height: 24), // Email Input
+                  AppTextField(
                     controller: controller.emailController,
-                    style: AppTextStyle.bodyMedium1,
-                    decoration: InputDecoration(
-                      hintText: 'Email',
-                      hintStyle: AppTextStyle.caption,
-                      filled: true,
-                      fillColor: Colors.grey.withValues(alpha: 0.1),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.radiusMedium,
-                        ),
-                        borderSide: BorderSide.none,
-                      ),
-                      prefixIcon: Icon(Icons.email, color: Colors.grey),
-                    ),
+                    hintText: 'Email',
+                    prefixIcon: Icons.email,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
                   ),
 
-                  SizedBox(height: 16),
-
-                  // Password Input
-                  Obx(
-                    () => TextField(
-                      controller: controller.passwordController,
-                      obscureText: controller.hidePassword.value,
-                      style: AppTextStyle.bodyMedium1,
-                      decoration: InputDecoration(
-                        hintText: 'Kata Sandi',
-                        hintStyle: AppTextStyle.caption,
-                        filled: true,
-                        fillColor: Colors.grey.withValues(alpha: 0.1),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppDimensions.radiusMedium,
-                          ),
-                          borderSide: BorderSide.none,
-                        ),
-                        prefixIcon: Icon(Icons.lock, color: Colors.grey),
-                        suffixIcon: IconButton(
-                          onPressed: controller.toggleVisibility,
-                          icon: Icon(
-                            controller.hidePassword.value
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                    ),
+                  SizedBox(height: 16), // Password Input
+                  AppPasswordTextField(
+                    controller: controller.passwordController,
+                    hintText: 'Kata Sandi',
+                    hidePassword: controller.hidePassword,
+                    onToggleVisibility: controller.toggleVisibility,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => controller.login(),
                   ),
 
                   // Forgot Password Text Button
@@ -235,23 +201,13 @@ class SignInView extends GetView<SignInController> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
-
-                  TextField(
+                  AppTextField(
                     controller: controller.forgotPasswordEmailController,
-                    style: AppTextStyle.bodyMedium1,
-                    decoration: InputDecoration(
-                      hintText: 'Email',
-                      hintStyle: AppTextStyle.caption,
-                      filled: true,
-                      fillColor: Colors.grey.withValues(alpha: 0.1),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.radiusMedium,
-                        ),
-                        borderSide: BorderSide.none,
-                      ),
-                      prefixIcon: Icon(Icons.email, color: Colors.grey),
-                    ),
+                    hintText: 'Email',
+                    prefixIcon: Icons.email,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => controller.sendForgotPasswordEmail(),
                   ),
                   const SizedBox(height: 12),
 
