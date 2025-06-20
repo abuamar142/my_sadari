@@ -49,12 +49,8 @@ void main() async {
   // Initialize Auth Service
   Get.put<AuthService>(AuthService());
 
-  // Check if user is logged in by checking AuthService (only in production)
-  final authService = Get.find<AuthService>();
   final String initialRoute =
-      environment == 'prod'
-          ? (authService.isLoggedIn ? '/home' : '/sign-in')
-          : '/home'; // Dev and staging go directly to home
+      environment == 'prod' ? Routes.splash : Routes.home;
 
   final cache = GraphQLCache();
 

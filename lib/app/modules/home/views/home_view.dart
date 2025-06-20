@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -82,7 +83,6 @@ class HomeView extends GetView<HomeController> {
                 title: Text("Riwayat Periksa"),
                 onTap: () => Get.toNamed(Routes.history),
               ),
-              // Show login/logout options based on auth status
               Obx(
                 () =>
                     controller.isLoggedIn
@@ -93,25 +93,33 @@ class HomeView extends GetView<HomeController> {
                             style: TextStyle(color: Colors.red),
                           ),
                           onTap: () {
-                            Get.back(); // Close drawer first
+                            Get.back();
                             _showLogoutConfirmation();
                           },
                         )
-                        : Column(
-                          children: [
-                            ListTile(
-                              leading: Icon(Icons.login),
-                              title: Text("Sign In"),
-                              onTap: () => Get.toNamed(Routes.signIn),
-                            ),
-                            ListTile(
-                              leading: Icon(Icons.account_circle_outlined),
-                              title: Text("Sign Up"),
-                              onTap: () => Get.toNamed(Routes.signUp),
-                            ),
-                          ],
-                        ),
+                        : SizedBox(),
               ),
+              if (kDebugMode)
+                Column(
+                  children: [
+                    ListTile(
+                      leading: Icon(Icons.login),
+                      title: Text("Sign In"),
+                      onTap: () => Get.toNamed(Routes.signIn),
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.account_circle_outlined),
+                      title: Text("Sign Up"),
+                      onTap: () => Get.toNamed(Routes.signUp),
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.restart_alt),
+                      title: Text("Splash Screen"),
+                      onTap: () => Get.toNamed(Routes.splash),
+                    ),
+                  ],
+                ),
+
               ListTile(
                 leading: Icon(Icons.notifications_outlined),
                 title: Text("Notifikasi"),

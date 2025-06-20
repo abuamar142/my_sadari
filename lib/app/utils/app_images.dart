@@ -1,6 +1,9 @@
 class AppImages {
   AppImages._();
 
+  static const String splash = 'assets/images/splash.png';
+  static const String unisa = 'assets/images/unisa.png';
+  static const String kampusMerdeka = 'assets/images/kampus_merdeka.png';
   static const String menu1 = 'assets/images/menu1.png';
   static const String menu2 = 'assets/images/menu2.png';
   static const String menu3 = 'assets/images/menu3.png';

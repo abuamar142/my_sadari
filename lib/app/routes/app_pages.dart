@@ -25,6 +25,8 @@ import '../modules/sign_in/bindings/sign_in_binding.dart';
 import '../modules/sign_in/views/sign_in_view.dart';
 import '../modules/sign_up/bindings/sign_up_binding.dart';
 import '../modules/sign_up/views/sign_up_view.dart';
+import '../modules/splash/bindings/splash_binding.dart';
+import '../modules/splash/views/splash_view.dart';
 import '../modules/tutorial/bindings/tutorial_binding.dart';
 import '../modules/tutorial/views/tutorial_view.dart';
 
@@ -33,9 +35,14 @@ part 'app_routes.dart';
 class AppPages {
   AppPages._();
 
-  static const initial = Routes.home;
+  static const initial = Routes.splash;
 
   static final routes = [
+    GetPage(
+      name: _Paths.splash,
+      page: () => const SplashView(),
+      binding: SplashBinding(),
+    ),
     GetPage(
       name: _Paths.home,
       page: () => const HomeView(),
