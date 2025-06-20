@@ -139,9 +139,7 @@ class SignUpView extends GetView<SignUpController> {
                       prefixIcon: Icon(Icons.email, color: Colors.grey),
                     ),
                   ),
-                  SizedBox(height: 16),
-
-                  // Password Input
+                  SizedBox(height: 16), // Password Input
                   Obx(
                     () => TextField(
                       controller: controller.passwordController,
@@ -160,7 +158,7 @@ class SignUpView extends GetView<SignUpController> {
                         ),
                         prefixIcon: Icon(Icons.lock, color: Colors.grey),
                         suffixIcon: IconButton(
-                          onPressed: controller.toggleVisibility,
+                          onPressed: controller.togglePasswordVisibility,
                           icon: Icon(
                             controller.hidePassword.value
                                 ? Icons.visibility
@@ -171,24 +169,77 @@ class SignUpView extends GetView<SignUpController> {
                       ),
                     ),
                   ),
+                  SizedBox(height: 16),
 
-                  SizedBox(height: 24),
-
-                  // Register Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.pink,
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
+                  // Password Confirmation Input
+                  Obx(
+                    () => TextField(
+                      controller: controller.passwordConfirmController,
+                      obscureText: controller.hidePasswordConfirm.value,
+                      style: AppTextStyle.bodyMedium1,
+                      decoration: InputDecoration(
+                        hintText: 'Konfirmasi Kata Sandi',
+                        hintStyle: AppTextStyle.caption,
+                        filled: true,
+                        fillColor: Colors.grey.withValues(alpha: 0.1),
+                        border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(
                             AppDimensions.radiusMedium,
                           ),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.lock_outline,
+                          color: Colors.grey,
+                        ),
+                        suffixIcon: IconButton(
+                          onPressed: controller.togglePasswordConfirmVisibility,
+                          icon: Icon(
+                            controller.hidePasswordConfirm.value
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
-                      onPressed: () {},
-                      child: Text('DAFTAR', style: AppTextStyle.buttonText1),
+                    ),
+                  ),
+
+                  SizedBox(height: 24), // Register Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: Obx(
+                      () => ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.pink,
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusMedium,
+                            ),
+                          ),
+                        ),
+                        onPressed:
+                            controller.isLoading.value
+                                ? null
+                                : controller.signUp,
+                        child:
+                            controller.isLoading.value
+                                ? SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                                : Text(
+                                  'DAFTAR',
+                                  style: AppTextStyle.buttonText1,
+                                ),
+                      ),
                     ),
                   ),
 
