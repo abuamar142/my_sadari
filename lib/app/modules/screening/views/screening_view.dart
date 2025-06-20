@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../routes/app_pages.dart';
 import '../../../styles/app_colors.dart';
 import '../../../styles/app_dimension.dart';
 import '../../../styles/app_text_style.dart';
@@ -8,8 +9,11 @@ import '../controllers/screening_controller.dart';
 
 class ScreeningView extends GetView<ScreeningController> {
   const ScreeningView({super.key});
+
   @override
   Widget build(BuildContext context) {
+    // Initialize the callback when the widget is built
+    controller.onShowResult = _showResultBottomSheet;
     return Container(
       decoration: BoxDecoration(gradient: AppColors.background3),
       child: Scaffold(
@@ -387,6 +391,98 @@ class ScreeningView extends GetView<ScreeningController> {
                   ),
         ),
       ),
+    );
+  }
+
+  void _showResultBottomSheet(String risk, bool isRisk) {
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.all(AppDimensions.paddingLarge),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(AppDimensions.radiusLarge),
+            topRight: Radius.circular(AppDimensions.radiusLarge),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.info,
+              color: isRisk ? AppColors.red : AppColors.teal1,
+              size: 48,
+            ),
+            SizedBox(height: 12),
+            Text(
+              risk,
+              style: AppTextStyle.headingMedium1.copyWith(
+                color: isRisk ? AppColors.red : AppColors.teal1,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 12),
+            Text(
+              controller.isEditMode.value
+                  ? 'Data berhasil diperbarui ke server'
+                  : 'Data berhasil disimpan ke server',
+              style: AppTextStyle.bodyMedium1.copyWith(color: AppColors.black),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Get.back();
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusMedium,
+                        ),
+                      ),
+                      side: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    child: Text(
+                      'Kembali',
+                      style: AppTextStyle.bodyLarge1.copyWith(
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: AppDimensions.paddingMedium),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.pink,
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusMedium,
+                        ),
+                      ),
+                    ),
+                    onPressed: () {
+                      Get.back();
+                      Get.toNamed(Routes.history);
+                    },
+                    child: Text(
+                      'Lihat Riwayat',
+                      style: AppTextStyle.buttonText1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: MediaQuery.of(Get.context!).padding.bottom),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
     );
   }
 }

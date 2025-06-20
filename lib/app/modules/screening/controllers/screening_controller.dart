@@ -5,7 +5,6 @@ import 'package:get_storage/get_storage.dart';
 
 import '../../../../core/models/api_response_model.dart';
 import '../../../../core/services/auth_service.dart';
-import '../../../routes/app_pages.dart';
 import '../../../styles/app_colors.dart';
 import '../models/screening_api_model.dart';
 import '../models/screening_list_model.dart';
@@ -60,6 +59,14 @@ class ScreeningController extends GetxController {
   void selectFalse(int index) => answers[index].value = 1;
 
   String get submitButtonText => isEditMode.value ? 'UBAH' : 'SIMPAN';
+
+  // Callback function to be set by the view
+  Function(String, bool)? onShowResult;
+
+  void showResultBottomSheet(String risk, bool isRisk) {
+    onShowResult?.call(risk, isRisk);
+  }
+
   Future<void> _fetchExistingScreeningData() async {
     final currentUser = _authService.currentUser;
     if (currentUser == null) return;
@@ -229,94 +236,7 @@ class ScreeningController extends GetxController {
 
           // 5. Tampilkan dialog hasil + navigasi ke Riwayat
           final isRisk = anyYes;
-          Get.bottomSheet(
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.info,
-                    color: isRisk ? AppColors.red : AppColors.teal1,
-                    size: 48,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    risk,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: isRisk ? AppColors.red : AppColors.teal1,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    isEditMode.value
-                        ? 'Data berhasil diperbarui'
-                        : 'Data berhasil disimpan',
-                    style: TextStyle(fontSize: 14, color: AppColors.black),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () {
-                            Get.back();
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            side: BorderSide(color: Colors.grey[300]!),
-                          ),
-                          child: Text(
-                            'Kembali',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.pink,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () {
-                            Get.back();
-                            Get.toNamed(Routes.history);
-                          },
-                          child: const Text(
-                            'Lihat Riwayat',
-                            style: TextStyle(color: AppColors.white),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: MediaQuery.of(Get.context!).padding.bottom),
-                ],
-              ),
-            ),
-          );
+          showResultBottomSheet(risk, isRisk);
         } else {
           Get.snackbar(
             'Error',
