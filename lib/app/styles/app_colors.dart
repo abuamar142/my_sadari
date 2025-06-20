@@ -27,4 +27,10 @@ class AppColors {
     end: Alignment.bottomCenter,
     colors: [blue2, blue2],
   );
+
+  static const LinearGradient background3 = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [teal1, white],
+  );
 }

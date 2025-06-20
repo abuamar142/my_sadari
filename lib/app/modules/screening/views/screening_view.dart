@@ -11,7 +11,7 @@ class ScreeningView extends GetView<ScreeningController> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(gradient: AppColors.background1),
+      decoration: BoxDecoration(gradient: AppColors.background3),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
@@ -343,7 +343,7 @@ class ScreeningView extends GetView<ScreeningController> {
       child: Obx(
         () => ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.pink,
+            backgroundColor: AppColors.teal1,
             padding: EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
