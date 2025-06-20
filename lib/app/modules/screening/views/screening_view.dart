@@ -95,8 +95,6 @@ class ScreeningView extends GetView<ScreeningController> {
                     _warning(),
                     SizedBox(height: 24),
                     _questions(),
-                    SizedBox(height: 24),
-                    _submitButton(),
                     SizedBox(height: 12),
                   ],
                 ),
@@ -104,6 +102,7 @@ class ScreeningView extends GetView<ScreeningController> {
             );
           }),
         ),
+        bottomNavigationBar: _buildBottomBar(),
       ),
     );
   }
@@ -313,6 +312,27 @@ class ScreeningView extends GetView<ScreeningController> {
       children: List.generate(
         controller.statements.length,
         (i) => questionTile(i),
+      ),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(AppDimensions.paddingLarge),
+          child: _submitButton(),
+        ),
       ),
     );
   }
