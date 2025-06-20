@@ -173,7 +173,7 @@ class HomeView extends GetView<HomeController> {
           title: 'JADWAL\nSADARI',
           image: AppImages.menu3,
           route: () => Get.toNamed(Routes.schedule),
-          color: AppColors.blue2,
+          color: AppColors.purple1,
         ),
         SizedBox(height: 20),
         MenuWidget(

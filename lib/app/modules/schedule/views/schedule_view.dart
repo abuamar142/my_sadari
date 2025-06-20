@@ -12,7 +12,7 @@ class ScheduleView extends GetView<ScheduleController> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(gradient: AppColors.background1),
+      decoration: BoxDecoration(gradient: AppColors.background2),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
@@ -28,7 +28,7 @@ class ScheduleView extends GetView<ScheduleController> {
           iconTheme: IconThemeData(color: AppColors.white),
           centerTitle: true,
           actions: [
-            // Debug/Test button (only show in debug mode)
+            // Debug Test button (only show in debug mode)
             if (kDebugMode)
               IconButton(
                 onPressed: controller.showTestNotificationBottomSheet,
@@ -66,7 +66,7 @@ class ScheduleView extends GetView<ScheduleController> {
           margin: EdgeInsets.only(bottom: 16),
           child: FloatingActionButton.extended(
             onPressed: controller.showAddScheduleBottomSheet,
-            backgroundColor: AppColors.pink,
+            backgroundColor: AppColors.purple1,
             elevation: 8,
             icon: Icon(Icons.add, color: AppColors.white, size: 20),
             label: Text('Tambah Jadwal', style: AppTextStyle.buttonText1),
@@ -149,7 +149,7 @@ class ScheduleView extends GetView<ScheduleController> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.pink.withValues(alpha: 0.1),
+                  color: AppColors.purple1.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusSmall,
                   ),
@@ -158,7 +158,7 @@ class ScheduleView extends GetView<ScheduleController> {
                   () => Text(
                     '${controller.schedules.length} jadwal',
                     style: AppTextStyle.caption.copyWith(
-                      color: AppColors.pink,
+                      color: AppColors.purple1,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -192,13 +192,13 @@ class ScheduleView extends GetView<ScheduleController> {
         Container(
           padding: EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.pink.withValues(alpha: 0.1),
+            color: AppColors.purple1.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
           ),
           child: Icon(
             Icons.notifications_active,
             size: 48,
-            color: AppColors.pink,
+            color: AppColors.purple1,
           ),
         ),
         SizedBox(height: 16),
@@ -226,7 +226,7 @@ class ScheduleView extends GetView<ScheduleController> {
             icon: Icon(Icons.play_arrow, color: AppColors.white),
             label: Text('Mulai SADARI', style: AppTextStyle.buttonText1),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.pink,
+              backgroundColor: AppColors.purple1,
               padding: EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
@@ -311,13 +311,13 @@ class ScheduleView extends GetView<ScheduleController> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.pink.withValues(alpha: 0.1),
+            color: AppColors.purple1.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
           ),
           child: Text(
             '${windowInfo['daysUntilStart']} hari lagi',
             style: AppTextStyle.headingLarge1.copyWith(
-              color: AppColors.pink,
+              color: AppColors.purple1,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -353,10 +353,10 @@ class ScheduleView extends GetView<ScheduleController> {
         Container(
           padding: EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppColors.pink.withValues(alpha: 0.1),
+            color: AppColors.purple1.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
           ),
-          child: Icon(Icons.calendar_today, size: 48, color: AppColors.pink),
+          child: Icon(Icons.calendar_today, size: 48, color: AppColors.purple1),
         ),
         SizedBox(height: AppDimensions.paddingMedium),
         Text(
@@ -377,13 +377,15 @@ class ScheduleView extends GetView<ScheduleController> {
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: controller.showAddScheduleBottomSheet,
-            icon: Icon(Icons.add, color: AppColors.pink),
+            icon: Icon(Icons.add, color: AppColors.purple1),
             label: Text(
               'Tambah Jadwal SADARI',
-              style: AppTextStyle.buttonText1.copyWith(color: AppColors.pink),
+              style: AppTextStyle.buttonText1.copyWith(
+                color: AppColors.purple1,
+              ),
             ),
             style: OutlinedButton.styleFrom(
-              side: BorderSide(color: AppColors.pink),
+              side: BorderSide(color: AppColors.purple1),
               padding: EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
@@ -403,10 +405,10 @@ class ScheduleView extends GetView<ScheduleController> {
           Container(
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.pink.withValues(alpha: 0.1),
+              color: AppColors.purple1.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.schedule, size: 48, color: AppColors.pink),
+            child: Icon(Icons.schedule, size: 48, color: AppColors.purple1),
           ),
           SizedBox(height: AppDimensions.paddingMedium),
           Text(
@@ -694,13 +696,13 @@ class ScheduleView extends GetView<ScheduleController> {
                 child: Text(
                   'Pengaturan',
                   style: AppTextStyle.bodyMedium1.copyWith(
-                    color: AppColors.pink,
+                    color: AppColors.purple1,
                   ),
                 ),
               ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.pink,
+                backgroundColor: AppColors.purple1,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusSmall,
