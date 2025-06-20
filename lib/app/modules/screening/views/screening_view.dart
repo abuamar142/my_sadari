@@ -57,6 +57,7 @@ class ScreeningView extends GetView<ScreeningController> {
                   _warning(),
                   SizedBox(height: 24),
                   _questions(),
+                  SizedBox(height: 24),
                   _submitButton(),
                   SizedBox(height: 12),
                 ],
@@ -253,32 +254,49 @@ class ScreeningView extends GetView<ScreeningController> {
   Widget _submitButton() {
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.pink,
-          padding: EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+      child: Obx(
+        () => ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.pink,
+            padding: EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+            ),
+            elevation: 2,
           ),
-          elevation: 2,
+          onPressed:
+              controller.isLoading.value
+                  ? null
+                  : () {
+                    final hasUnanswered = controller.answers.any(
+                      (ans) => ans.value == 0,
+                    );
+                    if (hasUnanswered) {
+                      Get.snackbar(
+                        'Peringatan',
+                        'Harap jawab semua pernyataan sebelum submit.',
+                        backgroundColor: AppColors.red,
+                        colorText: AppColors.white,
+                        snackPosition: SnackPosition.TOP,
+                        margin: EdgeInsets.all(AppDimensions.paddingMedium),
+                        borderRadius: AppDimensions.radiusSmall,
+                      );
+                      return;
+                    }
+                    controller.submit();
+                  },
+          child:
+              controller.isLoading.value
+                  ? SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.white,
+                    ),
+                  )
+                  : Text('SUBMIT', style: AppTextStyle.buttonText1),
         ),
-        onPressed: () {
-          final hasUnanswered = controller.answers.any((ans) => ans.value == 0);
-          if (hasUnanswered) {
-            Get.snackbar(
-              'Peringatan',
-              'Harap jawab semua pernyataan sebelum submit.',
-              backgroundColor: AppColors.red,
-              colorText: AppColors.white,
-              snackPosition: SnackPosition.TOP,
-              margin: EdgeInsets.all(AppDimensions.paddingMedium),
-              borderRadius: AppDimensions.radiusSmall,
-            );
-            return;
-          }
-          controller.submit();
-        },
-        child: Text('SUBMIT', style: AppTextStyle.buttonText1),
       ),
     );
   }
