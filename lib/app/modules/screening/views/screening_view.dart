@@ -60,7 +60,7 @@ class ScreeningView extends GetView<ScreeningController> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(color: AppColors.pink),
+                    CircularProgressIndicator(color: AppColors.red),
                     SizedBox(height: 16),
                     Text(
                       'Memuat data screening...',
@@ -120,13 +120,13 @@ class ScreeningView extends GetView<ScreeningController> {
           color:
               controller.isEditMode.value
                   ? AppColors.teal1.withValues(alpha: 0.1)
-                  : AppColors.pink.withValues(alpha: 0.1),
+                  : AppColors.red.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
           border: Border.all(
             color:
                 controller.isEditMode.value
                     ? AppColors.teal1.withValues(alpha: 0.2)
-                    : AppColors.pink.withValues(alpha: 0.2),
+                    : AppColors.red.withValues(alpha: 0.2),
           ),
         ),
         child: Column(
@@ -141,7 +141,7 @@ class ScreeningView extends GetView<ScreeningController> {
                   color:
                       controller.isEditMode.value
                           ? AppColors.teal1
-                          : AppColors.pink,
+                          : AppColors.red,
                   size: 24,
                 ),
                 SizedBox(width: 8),
@@ -151,7 +151,7 @@ class ScreeningView extends GetView<ScreeningController> {
                     color:
                         controller.isEditMode.value
                             ? AppColors.teal1
-                            : AppColors.pink,
+                            : AppColors.red,
                   ),
                 ),
               ],
@@ -166,7 +166,7 @@ class ScreeningView extends GetView<ScreeningController> {
                 color:
                     controller.isEditMode.value
                         ? AppColors.teal1
-                        : AppColors.pink,
+                        : AppColors.red,
                 height: 1.5,
               ),
             ),
@@ -267,12 +267,12 @@ class ScreeningView extends GetView<ScreeningController> {
                         horizontal: 16,
                       ),
                       decoration: BoxDecoration(
-                        color: sel == 2 ? AppColors.pink : Colors.transparent,
+                        color: sel == 2 ? AppColors.red : Colors.transparent,
                         borderRadius: BorderRadius.circular(
                           AppDimensions.radiusSmall,
                         ),
                         border: Border.all(
-                          color: sel == 2 ? AppColors.pink : Colors.grey,
+                          color: sel == 2 ? AppColors.red : Colors.grey,
                           width: 2,
                         ),
                       ),
@@ -458,7 +458,7 @@ class ScreeningView extends GetView<ScreeningController> {
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.pink,
+                      backgroundColor: isRisk ? AppColors.red : AppColors.teal1,
                       padding: EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(
