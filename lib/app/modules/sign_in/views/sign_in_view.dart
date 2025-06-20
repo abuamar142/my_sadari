@@ -109,7 +109,10 @@ class SignInView extends GetView<SignInController> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 24), // Login Button
+
+                  // Forgot Password Text Button
+                  _buildForgotPassword(),
+
                   SizedBox(
                     width: double.infinity,
                     child: Obx(
@@ -178,6 +181,153 @@ class SignInView extends GetView<SignInController> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Align _buildForgotPassword() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton(
+        onPressed: () {
+          controller.forgotPasswordEmailController.clear();
+
+          Get.bottomSheet(
+            Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  Text(
+                    'Lupa Kata Sandi',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Get.theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Masukkan email Anda untuk menerima link reset password',
+                    style: TextStyle(color: Colors.grey[600]),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+
+                  TextField(
+                    controller: controller.forgotPasswordEmailController,
+                    style: AppTextStyle.bodyMedium1,
+                    decoration: InputDecoration(
+                      hintText: 'Email',
+                      hintStyle: AppTextStyle.caption,
+                      filled: true,
+                      fillColor: Colors.grey.withValues(alpha: 0.1),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusMedium,
+                        ),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: Icon(Icons.email, color: Colors.grey),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            Get.back();
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            side: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          child: Text(
+                            'Batal',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Obx(
+                          () => ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.pink,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusMedium,
+                                ),
+                              ),
+                            ),
+                            onPressed:
+                                controller.isForgotPasswordLoading.value
+                                    ? null
+                                    : controller.sendForgotPasswordEmail,
+                            child:
+                                controller.isForgotPasswordLoading.value
+                                    ? SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.white,
+                                      ),
+                                    )
+                                    : Text(
+                                      'Kirim',
+                                      style: AppTextStyle.buttonText1,
+                                    ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Add bottom padding for safe area
+                  SizedBox(height: MediaQuery.of(Get.context!).padding.bottom),
+                ],
+              ),
+            ),
+            isScrollControlled: true,
+          );
+        },
+        child: Text(
+          'Lupa Kata Sandi?',
+          style: AppTextStyle.caption.copyWith(color: AppColors.pink),
         ),
       ),
     );
