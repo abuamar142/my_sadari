@@ -156,7 +156,7 @@ class HomeView extends GetView<HomeController> {
     return Column(
       children: [
         MenuWidget(
-          title: 'SKRENING\nFAKTOR\nRESIKO',
+          title: 'SKRiNING\nFAKTOR\nRESIKO',
           image: AppImages.menu1,
           route: () => Get.toNamed(Routes.screening),
           color: AppColors.teal1,
