@@ -8,7 +8,6 @@ import '../../../../core/services/auth_service.dart';
 import '../../../styles/app_colors.dart';
 import '../models/screening_api_model.dart';
 import '../models/screening_list_model.dart';
-import '../models/screening_model.dart';
 
 class Statement {
   final String text;
@@ -58,7 +57,7 @@ class ScreeningController extends GetxController {
 
   void selectFalse(int index) => answers[index].value = 1;
 
-  String get submitButtonText => isEditMode.value ? 'UBAH' : 'SIMPAN';
+  String get submitButtonText => isEditMode.value ? 'UBAH' : 'KIRIM';
 
   // Callback function to be set by the view
   Function(String, bool)? onShowResult;
@@ -75,8 +74,15 @@ class ScreeningController extends GetxController {
       isLoadingData.value = true;
 
       final token = storage.read('auth_token');
-      final response = await GetConnect().get(
-        'https://sadari.sdnusabali.online/api/screening_cancer?page=1&pageSize=1&filter[id_user]=${currentUser.id}',
+
+      final response = await GetConnect().request(
+        'https://sadari.sdnusabali.online/api/screening_cancer',
+        'GET',
+        body: {
+          'page': 1,
+          'pageSize': 1,
+          'filter': {'id_user': currentUser.id},
+        },
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -117,8 +123,7 @@ class ScreeningController extends GetxController {
     answers[0].value = data.umurMenstruasiPertamaDiBawah12 ? 2 : 1;
     answers[1].value = data.belumPernahMelahirkan ? 2 : 1;
     answers[2].value = data.belumPernahMenyusui ? 2 : 1;
-    answers[3].value =
-        1; // Default to "tidak" for question 3 (menyusui < 6 bulan)
+    answers[3].value = data.menyusuiKurangDari6 ? 2 : 1;
     answers[4].value = data.melahirkanAnakPertamaDiAtas35 ? 2 : 1;
     answers[5].value = data.menggunakanKb == "PIL" ? 2 : 1;
     answers[6].value = data.menopauseDiAtas50 ? 2 : 1;
@@ -135,7 +140,7 @@ class ScreeningController extends GetxController {
     if (hasUnanswered) {
       Get.snackbar(
         'Peringatan',
-        'Harap jawab semua pernyataan sebelum submit.',
+        'Harap jawab semua pernyataan sebelum mengirim.',
         backgroundColor: AppColors.red,
         colorText: AppColors.white,
         snackPosition: SnackPosition.TOP,
@@ -169,6 +174,7 @@ class ScreeningController extends GetxController {
         umurMenstruasiPertamaDiBawah12: answers[0].value == 2,
         belumPernahMelahirkan: answers[1].value == 2,
         belumPernahMenyusui: answers[2].value == 2,
+        menyusuiKurangDari6: answers[3].value == 2,
         melahirkanAnakPertamaDiAtas35: answers[4].value == 2,
         menggunakanKb: answers[5].value == 2 ? "PIL" : "Tidak",
         menopauseDiAtas50: answers[6].value == 2,
@@ -217,22 +223,11 @@ class ScreeningController extends GetxController {
         );
 
         if (apiResponse.success) {
-          // 4. Simpan juga ke local storage untuk backup
           final anyYes = answers.any((r) => r.value == 2);
           final risk =
               anyYes
                   ? 'Anda Berisiko Terkena Kanker Payudara'
                   : 'Anda Tidak Berisiko Terkena Kanker Payudara';
-
-          final result = ScreeningResult(
-            timestamp: DateTime.now(),
-            riskLevel: risk,
-            answers: answers.map((r) => r.value).toList(),
-          );
-
-          final List stored = storage.read<List>('riwayat') ?? <dynamic>[];
-          stored.add(result.toJson());
-          storage.write('riwayat', stored);
 
           // 5. Tampilkan dialog hasil + navigasi ke Riwayat
           final isRisk = anyYes;
@@ -263,7 +258,7 @@ class ScreeningController extends GetxController {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error submitting screening: $e');
+        print('Error sending screening: $e');
       }
       Get.snackbar(
         'Error',

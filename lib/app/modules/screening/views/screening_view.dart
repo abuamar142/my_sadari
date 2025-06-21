@@ -425,7 +425,7 @@ class ScreeningView extends GetView<ScreeningController> {
             Text(
               controller.isEditMode.value
                   ? 'Data berhasil diperbarui'
-                  : 'Data berhasil disimpan',
+                  : 'Data berhasil dikirim',
               style: AppTextStyle.bodyMedium1.copyWith(color: AppColors.black),
               textAlign: TextAlign.center,
             ),

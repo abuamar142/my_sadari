@@ -5,6 +5,7 @@ class ScreeningApiModel {
   final bool umurMenstruasiPertamaDiBawah12;
   final bool belumPernahMelahirkan;
   final bool belumPernahMenyusui;
+  final bool menyusuiKurangDari6;
   final bool melahirkanAnakPertamaDiAtas35;
   final String menggunakanKb;
   final bool menopauseDiAtas50;
@@ -23,6 +24,7 @@ class ScreeningApiModel {
     required this.umurMenstruasiPertamaDiBawah12,
     required this.belumPernahMelahirkan,
     required this.belumPernahMenyusui,
+    required this.menyusuiKurangDari6,
     required this.melahirkanAnakPertamaDiAtas35,
     required this.menggunakanKb,
     required this.menopauseDiAtas50,
@@ -43,6 +45,7 @@ class ScreeningApiModel {
       umurMenstruasiPertamaDiBawah12: json['umur_menstruasi_pertama_di_bawah_12'] ?? false,
       belumPernahMelahirkan: json['belum_pernah_melahirkan'] ?? false,
       belumPernahMenyusui: json['belum_pernah_menyusui'] ?? false,
+      menyusuiKurangDari6: json['menyusui_kurang_dari_6'] ?? false,
       melahirkanAnakPertamaDiAtas35: json['melahirkan_anak_pertama_di_atas_35'] ?? false,
       menggunakanKb: json['menggunakan_kb'] ?? '',
       menopauseDiAtas50: json['menopause_di_atas_50'] ?? false,
@@ -62,6 +65,7 @@ class ScreeningApiModel {
       'umur_menstruasi_pertama_di_bawah_12': umurMenstruasiPertamaDiBawah12,
       'belum_pernah_melahirkan': belumPernahMelahirkan,
       'belum_pernah_menyusui': belumPernahMenyusui,
+      'menyusui_kurang_dari_6': menyusuiKurangDari6,
       'melahirkan_anak_pertama_di_atas_35': melahirkanAnakPertamaDiAtas35,
       'menggunakan_kb': menggunakanKb,
       'menopause_di_atas_50': menopauseDiAtas50,

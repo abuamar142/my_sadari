@@ -60,6 +60,7 @@ class ScreeningItemWithResponden {
   final bool umurMenstruasiPertamaDiBawah12;
   final bool belumPernahMelahirkan;
   final bool belumPernahMenyusui;
+  final bool menyusuiKurangDari6;
   final bool melahirkanAnakPertamaDiAtas35;
   final String menggunakanKb;
   final bool menopauseDiAtas50;
@@ -81,6 +82,7 @@ class ScreeningItemWithResponden {
     required this.umurMenstruasiPertamaDiBawah12,
     required this.belumPernahMelahirkan,
     required this.belumPernahMenyusui,
+    required this.menyusuiKurangDari6,
     required this.melahirkanAnakPertamaDiAtas35,
     required this.menggunakanKb,
     required this.menopauseDiAtas50,
@@ -105,6 +107,7 @@ class ScreeningItemWithResponden {
           json['umur_menstruasi_pertama_di_bawah_12'] ?? false,
       belumPernahMelahirkan: json['belum_pernah_melahirkan'] ?? false,
       belumPernahMenyusui: json['belum_pernah_menyusui'] ?? false,
+      menyusuiKurangDari6: json['menyusui_kurang_dari_6'] ?? false,
       melahirkanAnakPertamaDiAtas35:
           json['melahirkan_anak_pertama_di_atas_35'] ?? false,
       menggunakanKb: json['menggunakan_kb'] ?? '',
