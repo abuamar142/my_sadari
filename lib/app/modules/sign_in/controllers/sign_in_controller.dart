@@ -49,6 +49,30 @@ class SignInController extends GetxController {
       );
       return;
     }
+    if (!GetUtils.isEmail(emailController.text.trim())) {
+      Get.snackbar(
+        "Error",
+        "Format email tidak valid",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Get.theme.colorScheme.error,
+        colorText: Get.theme.colorScheme.onError,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 8,
+      );
+      return;
+    }
+    if (passwordController.text.length < 6) {
+      Get.snackbar(
+        "Error",
+        "Password harus minimal 6 karakter",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Get.theme.colorScheme.error,
+        colorText: Get.theme.colorScheme.onError,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 8,
+      );
+      return;
+    }
 
     try {
       isLoading.value = true;
