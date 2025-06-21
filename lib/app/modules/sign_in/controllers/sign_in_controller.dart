@@ -87,6 +87,7 @@ class SignInController extends GetxController {
       if (kDebugMode) {
         print('Login response: ${response.statusCode.toString()}');
         print('Login response success: ${response.body['success']}');
+        print('Login response body: ${response.body}');
       }
 
       if (response.statusCode == 200 && response.body['success'] == true) {
@@ -115,9 +116,16 @@ class SignInController extends GetxController {
         emailController.clear();
         passwordController.clear();
       } else {
+        String errorMessage = 'Terjai kesalahan saat login';
+
+        if (response.body['error']['message'] ==
+            'Invalid email/telp or password') {
+          errorMessage = 'Email atau password salah';
+        }
+
         Get.snackbar(
           'Login Gagal',
-          response.body['message'] ?? 'Terjadi kesalahan saat login',
+          errorMessage,
           snackPosition: SnackPosition.TOP,
           backgroundColor: Get.theme.colorScheme.error,
           colorText: Get.theme.colorScheme.onError,
