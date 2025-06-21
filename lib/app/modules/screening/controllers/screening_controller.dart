@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
-import '../../../../core/models/api_response_model.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/screening_service.dart';
 import '../../../styles/app_colors.dart';
-import '../models/screening_api_model.dart';
+import '../models/screening_data_model.dart';
 import '../models/screening_list_model.dart';
 
 class Statement {
@@ -19,6 +19,7 @@ class Statement {
 class ScreeningController extends GetxController {
   final storage = GetStorage();
   late final AuthService _authService;
+  late final ScreeningService _screeningService;
   final RxBool isLoading = false.obs;
   final RxBool isLoadingData = false.obs;
   final RxBool isEditMode = false.obs;
@@ -44,11 +45,11 @@ class ScreeningController extends GetxController {
   ];
 
   late final List<RxInt> answers;
-
   @override
   void onInit() {
     super.onInit();
     _authService = Get.find<AuthService>();
+    _screeningService = Get.find<ScreeningService>();
     answers = List<RxInt>.generate(statements.length, (_) => 0.obs);
     _fetchExistingScreeningData();
   }
@@ -73,29 +74,19 @@ class ScreeningController extends GetxController {
     try {
       isLoadingData.value = true;
 
-      final token = storage.read('auth_token');
-
-      final response = await GetConnect().request(
-        'https://sadari.sdnusabali.online/api/screening_cancer',
-        'GET',
-        body: {
-          'page': 1,
-          'pageSize': 1,
-          'filter': {'id_user': currentUser.id},
-        },
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
+      final response = await _screeningService.getScreeningList(
+        userId: currentUser.id,
+        page: 1,
+        pageSize: 1,
       );
 
       if (kDebugMode) {
-        print('Fetch screening response: ${response.statusCode}');
-        print('Fetch screening response body: ${response.body}');
+        print('Fetch screening result: ${response.success}');
+        print('Fetch screening message: ${response.message}');
       }
 
-      if (response.statusCode == 200) {
-        final listResponse = ScreeningListResponse.fromJson(response.body);
+      if (response.success && response.data != null) {
+        final listResponse = response.data!;
 
         if (listResponse.success && listResponse.data.isNotEmpty) {
           // Data exists, set to edit mode and populate form
@@ -108,169 +99,130 @@ class ScreeningController extends GetxController {
           isEditMode.value = false;
           existingScreening.value = null;
         }
+      } else {
+        // Handle error case
+        if (kDebugMode) {
+          print('Error fetching screening data: ${response.message}');
+        }
+        isEditMode.value = false;
+        existingScreening.value = null;
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error fetching existing screening data: $e');
+        print('Exception in _fetchExistingScreeningData: $e');
       }
+      isEditMode.value = false;
+      existingScreening.value = null;
     } finally {
       isLoadingData.value = false;
     }
   }
 
   void _populateFormWithExistingData(ScreeningItemWithResponden data) {
+    // Convert to unified model for easier handling
+    final screeningData = ScreeningDataModel.fromScreeningItem(data);
+
     // Map existing data to form answers
-    answers[0].value = data.umurMenstruasiPertamaDiBawah12 ? 2 : 1;
-    answers[1].value = data.belumPernahMelahirkan ? 2 : 1;
-    answers[2].value = data.belumPernahMenyusui ? 2 : 1;
-    answers[3].value = data.menyusuiKurangDari6 ? 2 : 1;
-    answers[4].value = data.melahirkanAnakPertamaDiAtas35 ? 2 : 1;
-    answers[5].value = data.menggunakanKb == "PIL" ? 2 : 1;
-    answers[6].value = data.menopauseDiAtas50 ? 2 : 1;
-    answers[7].value = data.pernahTumorJinak ? 2 : 1;
-    answers[8].value = data.riwayatKeluargaKankerPayudara ? 2 : 1;
-    answers[9].value = (data.consumeAlcohol ?? false) ? 2 : 1;
-    answers[10].value = (data.smoking ?? false) ? 2 : 1;
-    answers[11].value = (data.obesitas ?? false) ? 2 : 1;
+    answers[0].value = screeningData.umurMenstruasiPertamaDiBawah12 ? 2 : 1;
+    answers[1].value = screeningData.belumPernahMelahirkan ? 2 : 1;
+    answers[2].value = screeningData.belumPernahMenyusui ? 2 : 1;
+    answers[3].value = screeningData.menyusuiKurangDari6 ? 2 : 1;
+    answers[4].value = screeningData.melahirkanAnakPertamaDiAtas35 ? 2 : 1;
+    answers[5].value = screeningData.menggunakanKb == "PIL" ? 2 : 1;
+    answers[6].value = screeningData.menopauseDiAtas50 ? 2 : 1;
+    answers[7].value = screeningData.pernahTumorJinak ? 2 : 1;
+    answers[8].value = screeningData.riwayatKeluargaKankerPayudara ? 2 : 1;
+    answers[9].value = screeningData.consumeAlcohol ? 2 : 1;
+    answers[10].value = screeningData.smoking ? 2 : 1;
+    answers[11].value = screeningData.obesitas ? 2 : 1;
   }
 
   void submit() async {
-    // 1. Pastikan tidak ada yang belum dijawab
+    // 1. Validasi semua pertanyaan sudah dijawab
     final hasUnanswered = answers.any((r) => r.value == 0);
     if (hasUnanswered) {
-      Get.snackbar(
-        'Peringatan',
-        'Harap jawab semua pernyataan sebelum mengirim.',
-        backgroundColor: AppColors.red,
-        colorText: AppColors.white,
-        snackPosition: SnackPosition.TOP,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
-      );
+      _showErrorSnackbar('Harap jawab semua pernyataan sebelum mengirim.');
       return;
     }
 
     try {
       isLoading.value = true;
 
-      // 2. Siapkan data untuk API
+      // 2. Validasi user sudah login
       final currentUser = _authService.currentUser;
       if (currentUser == null) {
-        Get.snackbar(
-          'Error',
-          'Silakan login terlebih dahulu',
-          backgroundColor: AppColors.red,
-          colorText: AppColors.white,
-          snackPosition: SnackPosition.TOP,
-          margin: const EdgeInsets.all(16),
-          borderRadius: 8,
-        );
+        _showErrorSnackbar('Silakan login terlebih dahulu');
         return;
       }
 
-      // Mapping answers to screening data based on statement indices
-      final screeningData = ScreeningApiModel(
-        respondenId: currentUser.id,
-        umurMenstruasiPertamaDiBawah12: answers[0].value == 2,
-        belumPernahMelahirkan: answers[1].value == 2,
-        belumPernahMenyusui: answers[2].value == 2,
-        menyusuiKurangDari6: answers[3].value == 2,
-        melahirkanAnakPertamaDiAtas35: answers[4].value == 2,
-        menggunakanKb: answers[5].value == 2 ? "PIL" : "Tidak",
-        menopauseDiAtas50: answers[6].value == 2,
-        pernahTumorJinak: answers[7].value == 2,
-        riwayatKeluargaKankerPayudara: answers[8].value == 2,
-        consumeAlcohol: answers[9].value == 2,
-        smoking: answers[10].value == 2,
-        obesitas: answers[11].value == 2,
+      // 3. Siapkan data untuk API
+      final screeningData = _mapAnswersToApiModel(currentUser.id);
+
+      // 4. Submit data menggunakan service
+      final response = await _screeningService.submitScreening(
+        data: screeningData,
+        existingScreeningId: existingScreening.value?.idSkriningKankerPayudara,
       );
 
-      // 3. Kirim data ke API
-      final token = storage.read('auth_token');
-      Response response;
-
-      if (isEditMode.value && existingScreening.value != null) {
-        // Update existing data using PUT method
-        response = await GetConnect().put(
-          'https://sadari.sdnusabali.online/api/screening_cancer/${existingScreening.value!.idSkriningKankerPayudara}',
-          screeningData.toJson(),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-        );
-      } else {
-        // Create new data using POST method
-        response = await GetConnect().post(
-          'https://sadari.sdnusabali.online/api/screening_cancer',
-          screeningData.toJson(),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-        );
-      }
-
       if (kDebugMode) {
-        print('Screening response: ${response.statusCode}');
-        print('Screening response body: ${response.body}');
+        print('Submit screening result: ${response.success}');
+        print('Submit screening message: ${response.message}');
       }
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final apiResponse = ApiResponseModel<ScreeningApiModel>.fromJson(
-          response.body,
-          (data) => ScreeningApiModel.fromJson(data),
-        );
+      // 5. Handle response
+      if (response.success) {
+        final anyYes = answers.any((r) => r.value == 2);
+        final risk =
+            anyYes
+                ? 'Anda Berisiko Terkena Kanker Payudara'
+                : 'Anda Tidak Berisiko Terkena Kanker Payudara';
 
-        if (apiResponse.success) {
-          final anyYes = answers.any((r) => r.value == 2);
-          final risk =
-              anyYes
-                  ? 'Anda Berisiko Terkena Kanker Payudara'
-                  : 'Anda Tidak Berisiko Terkena Kanker Payudara';
-
-          // 5. Tampilkan dialog hasil + navigasi ke Riwayat
-          final isRisk = anyYes;
-          showResultBottomSheet(risk, isRisk);
-        } else {
-          Get.snackbar(
-            'Error',
-            apiResponse.message,
-            backgroundColor: AppColors.red,
-            colorText: AppColors.white,
-            snackPosition: SnackPosition.TOP,
-            margin: const EdgeInsets.all(16),
-            borderRadius: 8,
-          );
-        }
+        final isRisk = anyYes;
+        showResultBottomSheet(risk, isRisk);
       } else {
-        Get.snackbar(
-          'Error',
-          isEditMode.value
-              ? 'Gagal memperbarui data screening: ${response.statusText}'
-              : 'Gagal mengirim data screening: ${response.statusText}',
-          backgroundColor: AppColors.red,
-          colorText: AppColors.white,
-          snackPosition: SnackPosition.TOP,
-          margin: const EdgeInsets.all(16),
-          borderRadius: 8,
-        );
+        _showErrorSnackbar(response.message);
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error sending screening: $e');
+        print('Exception in submit: $e');
       }
-      Get.snackbar(
-        'Error',
+      _showErrorSnackbar(
         'Terjadi kesalahan saat mengirim data: ${e.toString()}',
-        backgroundColor: AppColors.red,
-        colorText: AppColors.white,
-        snackPosition: SnackPosition.TOP,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
       );
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// Helper method to map answers to API model
+  ScreeningDataModel _mapAnswersToApiModel(String userId) {
+    return ScreeningDataModel(
+      respondenId: userId,
+      umurMenstruasiPertamaDiBawah12: answers[0].value == 2,
+      belumPernahMelahirkan: answers[1].value == 2,
+      belumPernahMenyusui: answers[2].value == 2,
+      menyusuiKurangDari6: answers[3].value == 2,
+      melahirkanAnakPertamaDiAtas35: answers[4].value == 2,
+      menggunakanKb: answers[5].value == 2 ? "PIL" : "Tidak",
+      menopauseDiAtas50: answers[6].value == 2,
+      pernahTumorJinak: answers[7].value == 2,
+      riwayatKeluargaKankerPayudara: answers[8].value == 2,
+      consumeAlcohol: answers[9].value == 2,
+      smoking: answers[10].value == 2,
+      obesitas: answers[11].value == 2,
+    );
+  }
+
+  /// Helper method to show error snackbar
+  void _showErrorSnackbar(String message) {
+    Get.snackbar(
+      'Error',
+      message,
+      backgroundColor: AppColors.red,
+      colorText: AppColors.white,
+      snackPosition: SnackPosition.TOP,
+      margin: const EdgeInsets.all(16),
+      borderRadius: 8,
+    );
   }
 }
