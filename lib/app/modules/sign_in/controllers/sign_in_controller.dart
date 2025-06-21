@@ -241,8 +241,4 @@ class SignInController extends GetxController {
       isForgotPasswordLoading.value = false;
     }
   }
-
-  void showForgotPasswordDialog() {
-    
-  }
 }
