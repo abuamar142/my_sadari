@@ -1,91 +1,276 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:my_sadari/app/modules/tutorial/views/tutorial_widget.dart';
-import 'package:my_sadari/app/utils/app_images.dart';
 
+import '../../../../core/models/step_model.dart';
 import '../../../styles/app_colors.dart';
 import '../../../styles/app_dimension.dart';
+import '../../../styles/app_text_style.dart';
+import '../../../widgets/app_card_info.dart';
 import '../controllers/tutorial_controller.dart';
 
 class TutorialView extends GetView<TutorialController> {
   const TutorialView({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.orange,
-      appBar: AppBar(
-        title: Text(
-          'Cara Pemeriksaan Sadari',
-          style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.white),
-        ),
+    return Container(
+      decoration: BoxDecoration(gradient: AppColors.background5),
+      child: Scaffold(
         backgroundColor: Colors.transparent,
-        centerTitle: true,
-        leading: IconButton(
-          onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back, color: AppColors.white),
+        appBar: AppBar(
+          title: Text(
+            'Cara Pemeriksaan Sadari',
+            style: AppTextStyle.headingLarge2.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          centerTitle: true,
+          leading: IconButton(
+            onPressed: () => Get.back(),
+            icon: Icon(Icons.arrow_back, color: AppColors.white),
+          ),
+          automaticallyImplyLeading: false,
         ),
-        automaticallyImplyLeading: false,
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(AppDimensions.paddingLarge),
-        children: [_steps(), SizedBox(height: AppDimensions.paddingLarge), _warning()],
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.all(AppDimensions.paddingLarge),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppCardInfo(
+                    title: 'Tutorial Sadari',
+                    subtitle:
+                        'Pelajari cara melakukan pemeriksaan payudara sendiri dengan benar',
+                    color: AppColors.orange,
+                    icon: Icons.health_and_safety_outlined,
+                  ),
+                  SizedBox(height: 24),
+                  _buildStepsSection(),
+                  SizedBox(height: 24),
+                  _buildWarningSection(),
+                  SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _steps() {
+  Widget _buildStepsSection() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TutorialWidget(
-          description:
-              'Berdiri tegak di depan cermin dengan kedua tangan ke bawah di samping badan. Melihat dan membandingkan kedua payudara dalam bentuk, ukuran dan warna kulit.\n\nPerhatikan kemungkinan-kemungkinan berikut: Pembengkakan kulit, Posisi dan bentuk dari puting susu (apakah masuk ke dalam atau bengkak), Kulit kemerahan, keriput atau borok dan bengkak.',
-          image: AppImages.tutor1,
-        ),
-        SizedBox(height: AppDimensions.paddingLarge),
-        TutorialWidget(
-          description:
-              'Berdiri dengan mengangkat kedua lengan dan melihat kelainan seperti pada langkah 1 di atas.',
-          image: AppImages.tutor2,
-        ),
-        SizedBox(height: AppDimensions.paddingLarge),
-        TutorialWidget(
-          description:
-              'Perhatikan tanda-tanda adanya pengeluaran cairan dari puting susu.',
-          image: AppImages.tutor3,
-        ),
-        SizedBox(height: AppDimensions.paddingLarge),
-        TutorialWidget(
-          description:
-              'Posisi berbaring, rabalah kedua payudara, payudara kiri dengan tangan kanan dan sebaliknya. Gunakan bagian dalam telapak tangan dari jari ke 2-4. Raba seluruh payudara dengan cara melingkar dari luar ke dalam atau dapat juga vertikal dari atas ke bawah.',
-          image: AppImages.tutor4,
-        ),
-        SizedBox(height: AppDimensions.paddingLarge),
-        TutorialWidget(
-          description:
-              'Saat mandi rabalah payudara dengan tangan yang licin karena sabun dalam posisi berdiri dan lakukan cara melingkar dari luar ke dalam atau dapat juga vertikal dari atas ke bawah.',
-          image: AppImages.tutor5,
-        ),
+        ...controller.tutorialSteps.asMap().entries.map((entry) {
+          final index = entry.key;
+          final step = entry.value;
+          return Container(
+            margin: EdgeInsets.only(bottom: 16),
+            child: _buildStepCard(stepNumber: index + 1, step: step),
+          );
+        }),
       ],
     );
   }
 
-  Widget _warning() {
+  Widget _buildWarningSection() {
     return Container(
-      padding: EdgeInsets.all(20),
+      width: double.infinity,
+      padding: EdgeInsets.all(AppDimensions.paddingLarge),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.red.withValues(alpha: 0.1),
+            AppColors.pink.withValues(alpha: 0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+        border: Border.all(
+          color: AppColors.red.withValues(alpha: 0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.red.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded, color: AppColors.pink),
-          SizedBox(height: 8),
-          Text(
-            textAlign: TextAlign.justify,
-            "JIKA MENEMUKAN BENJOLAN ATAU PERBEDAAN PADA PAYUDARA YANG MEMBUAT ANDA RESAH, SEGERA KONSULTASIKAN KEPADA TENAGA KESEHATAN DI PUSKESMAS SETEMPAT.",
-            style: TextStyle(color: AppColors.pink, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColors.red, AppColors.pink],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.red.withValues(alpha: 0.3),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.warning_rounded,
+                  color: AppColors.white,
+                  size: 24,
+                ),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  'Peringatan Penting',
+                  style: AppTextStyle.headingSmall1.copyWith(
+                    color: AppColors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.red.withValues(alpha: 0.1),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              "JIKA MENEMUKAN BENJOLAN ATAU PERBEDAAN PADA PAYUDARA YANG MEMBUAT ANDA RESAH, SEGERA KONSULTASIKAN KEPADA TENAGA KESEHATAN DI PUSKESMAS SETEMPAT.",
+              textAlign: TextAlign.justify,
+              style: AppTextStyle.bodyMedium1.copyWith(
+                color: AppColors.red,
+                fontWeight: FontWeight.w600,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepCard({required int stepNumber, required StepModel step}) {
+    return Container(
+      padding: EdgeInsets.all(AppDimensions.paddingLarge),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: step.color.withValues(alpha: 0.2), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Step Header
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [step.color, step.color.withValues(alpha: 0.7)],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: step.color.withValues(alpha: 0.3),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    stepNumber.toString(),
+                    style: AppTextStyle.bodyLarge1.copyWith(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  step.title,
+                  style: AppTextStyle.headingSmall1.copyWith(
+                    color: step.color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+
+          // Step Image
+          Center(
+            child: Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: step.color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                border: Border.all(
+                  color: step.color.withValues(alpha: 0.2),
+                  width: 1,
+                ),
+              ),
+              child: Image.asset(
+                step.image,
+                width: 140,
+                height: 140,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          SizedBox(height: 16),
+
+          // Step Description
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+              border: Border.all(
+                color: Colors.grey.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              step.description,
+              style: AppTextStyle.bodyMedium1.copyWith(
+                height: 1.5,
+                color: AppColors.black,
+              ),
+            ),
           ),
         ],
       ),
