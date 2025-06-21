@@ -1,6 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
-import 'package:my_sadari/app/styles/app_colors.dart';
+
+import '../../../../core/models/news_source_model.dart';
+import '../../../styles/app_colors.dart';
 
 class NewsController extends GetxController {
   late InAppWebViewController? webController;
@@ -10,6 +13,45 @@ class NewsController extends GetxController {
   final selectedSourceTitle = ''.obs;
 
   late PullToRefreshController pullToRefreshController;
+
+  /// Get news sources data
+  List<NewsSourceModel> get newsSources => [
+    NewsSourceModel(
+      title: 'Kementerian Kesehatan',
+      subtitle: 'Portal resmi informasi kesehatan',
+      url: 'https://kemkes.go.id/id/search?s=payudara',
+      icon: Icons.local_hospital,
+      color: AppColors.pink,
+    ),
+    NewsSourceModel(
+      title: 'Suara.com',
+      subtitle: 'Berita terpercaya seputar kesehatan',
+      url: 'https://www.suara.com/search?q=payudara',
+      icon: Icons.newspaper,
+      color: AppColors.teal2,
+    ),
+    NewsSourceModel(
+      title: 'Media Indonesia',
+      subtitle: 'Portal berita nasional',
+      url: 'https://mediaindonesia.com/',
+      icon: Icons.article,
+      color: AppColors.orange,
+    ),
+    NewsSourceModel(
+      title: 'Sehat Negeriku',
+      subtitle: 'Informasi kesehatan terpercaya',
+      url: 'https://sehatnegeriku.kemkes.go.id/?s=payudara',
+      icon: Icons.health_and_safety,
+      color: AppColors.purple1,
+    ),
+    NewsSourceModel(
+      title: 'Sindo News',
+      subtitle: 'Artikel kesehatan terkini',
+      url: 'https://search.sindonews.com/go?q=payudara&type=artikel',
+      icon: Icons.feed,
+      color: AppColors.blue1,
+    ),
+  ];
 
   @override
   void onInit() {
@@ -45,18 +87,23 @@ class NewsController extends GetxController {
       return selectedSourceTitle.value;
     }
 
-    if (selectedUrl.value.contains('kemkes.go.id')) {
-      return 'Kementerian Kesehatan';
-    } else if (selectedUrl.value.contains('suara.com')) {
-      return 'Suara.com';
-    } else if (selectedUrl.value.contains('mediaindonesia.com')) {
-      return 'Media Indonesia';
-    } else if (selectedUrl.value.contains('sehatnegeriku.kemkes.go.id')) {
-      return 'Sehat Negeriku';
-    } else if (selectedUrl.value.contains('sindonews.com')) {
-      return 'Sindo News';
+    // Find source by URL match
+    for (final source in newsSources) {
+      if (selectedUrl.value.contains(_extractDomain(source.url))) {
+        return source.title;
+      }
     }
 
     return 'Sumber Berita';
+  }
+
+  /// Extract domain from URL for matching
+  String _extractDomain(String url) {
+    try {
+      final uri = Uri.parse(url);
+      return uri.host;
+    } catch (e) {
+      return url;
+    }
   }
 }

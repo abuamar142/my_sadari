@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:my_sadari/app/widgets/app_card_info.dart';
 
+import '../../../../core/models/news_source_model.dart';
 import '../../../routes/app_pages.dart';
 import '../../../styles/app_colors.dart';
 import '../../../styles/app_dimension.dart';
 import '../../../styles/app_text_style.dart';
+import '../../../widgets/app_card_info.dart';
 import '../controllers/news_controller.dart';
 
 class NewsView extends GetView<NewsController> {
@@ -34,44 +35,6 @@ class NewsView extends GetView<NewsController> {
   }
 
   Widget _buildSourceSelection() {
-    final newsSourceList = [
-      {
-        'title': 'Kementerian Kesehatan',
-        'subtitle': 'Portal resmi informasi kesehatan',
-        'url': 'https://kemkes.go.id/id/search?s=payudara',
-        'icon': Icons.local_hospital,
-        'color': AppColors.pink,
-      },
-      {
-        'title': 'Suara.com',
-        'subtitle': 'Berita terpercaya seputar kesehatan',
-        'url': 'https://www.suara.com/search?q=payudara',
-        'icon': Icons.newspaper,
-        'color': AppColors.teal2,
-      },
-      {
-        'title': 'Media Indonesia',
-        'subtitle': 'Portal berita nasional',
-        'url': 'https://mediaindonesia.com/',
-        'icon': Icons.article,
-        'color': AppColors.orange,
-      },
-      {
-        'title': 'Sehat Negeriku',
-        'subtitle': 'Informasi kesehatan terpercaya',
-        'url': 'https://sehatnegeriku.kemkes.go.id/?s=payudara',
-        'icon': Icons.health_and_safety,
-        'color': AppColors.purple1,
-      },
-      {
-        'title': 'Sindo News',
-        'subtitle': 'Artikel kesehatan terkini',
-        'url': 'https://search.sindonews.com/go?q=payudara&type=artikel',
-        'icon': Icons.feed,
-        'color': AppColors.blue1,
-      },
-    ];
-
     return SafeArea(
       child: SingleChildScrollView(
         padding: EdgeInsets.all(AppDimensions.paddingLarge),
@@ -87,15 +50,11 @@ class NewsView extends GetView<NewsController> {
               icon: Icons.health_and_safety_outlined,
             ),
 
-            SizedBox(height: 20), // News Sources List
-            ...newsSourceList.map(
-              (source) => _buildNewsSourceItem(
-                title: source['title'] as String,
-                subtitle: source['subtitle'] as String,
-                url: source['url'] as String,
-                icon: source['icon'] as IconData,
-                color: source['color'] as Color,
-              ),
+            SizedBox(height: 20),
+
+            // News Sources List
+            ...controller.newsSources.map(
+              (source) => _buildNewsSourceItem(source: source),
             ),
           ],
         ),
@@ -103,13 +62,7 @@ class NewsView extends GetView<NewsController> {
     );
   }
 
-  Widget _buildNewsSourceItem({
-    required String title,
-    required String subtitle,
-    required String url,
-    required IconData icon,
-    required Color color,
-  }) {
+  Widget _buildNewsSourceItem({required NewsSourceModel source}) {
     return Container(
       margin: EdgeInsets.only(bottom: 12),
       child: Material(
@@ -118,7 +71,11 @@ class NewsView extends GetView<NewsController> {
           onTap:
               () => Get.toNamed(
                 Routes.newsDetail,
-                arguments: {'url': url, 'title': title, 'color': color},
+                arguments: {
+                  'url': source.url,
+                  'title': source.title,
+                  'color': source.color,
+                },
               ),
           borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
           child: Container(
@@ -136,10 +93,10 @@ class NewsView extends GetView<NewsController> {
                 Container(
                   padding: EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
+                    color: source.color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(icon, size: 20, color: color),
+                  child: Icon(source.icon, size: 20, color: source.color),
                 ),
                 SizedBox(width: 12),
                 Expanded(
@@ -147,14 +104,14 @@ class NewsView extends GetView<NewsController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        title,
+                        source.title,
                         style: AppTextStyle.bodyMedium1.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       SizedBox(height: 2),
                       Text(
-                        subtitle,
+                        source.subtitle,
                         style: AppTextStyle.bodySmall1.copyWith(
                           color: Colors.grey[600],
                         ),
