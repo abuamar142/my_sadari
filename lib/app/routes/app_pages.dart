@@ -6,6 +6,7 @@ import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/news/bindings/news_binding.dart';
 import '../modules/news/views/news_view.dart';
+import '../modules/news/views/news_detail_view.dart';
 import '../modules/notification/bindings/notification_binding.dart';
 import '../modules/notification/views/notification_view.dart';
 import '../modules/onboarding/bindings/onboarding_binding.dart';
@@ -67,6 +68,12 @@ class AppPages {
       name: _Paths.news,
       page: () => const NewsView(),
       binding: NewsBinding(),
+    ),
+    GetPage(
+      name: _Paths.newsDetail,
+      page: () => const NewsDetailView(),
+      binding: NewsBinding(),
+      transition: Transition.cupertino,
     ),
     GetPage(
       name: _Paths.history,

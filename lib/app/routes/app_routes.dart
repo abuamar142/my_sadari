@@ -9,6 +9,7 @@ abstract class Routes {
   static const tutorial = _Paths.tutorial;
   static const schedule = _Paths.schedule;
   static const news = _Paths.news;
+  static const newsDetail = _Paths.newsDetail;
   static const history = _Paths.history;
   static const questionnaire = _Paths.questionnaire;
   static const question1 = _Paths.question1;
@@ -30,6 +31,7 @@ abstract class _Paths {
   static const tutorial = '/tutorial';
   static const schedule = '/schedule';
   static const news = '/news';
+  static const newsDetail = '/news-detail';
   static const history = '/history';
   static const questionnaire = '/questionnaire';
   static const question1 = '/question1';
