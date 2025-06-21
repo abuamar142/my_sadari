@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:my_sadari/app/routes/app_pages.dart';
 
 import '../../../../core/models/response_model.dart';
 import '../../../../core/models/user_model.dart';
@@ -110,7 +111,7 @@ class SignInController extends GetxController {
         );
 
         // Navigate to home page
-        Get.offAllNamed('/home');
+        Get.offAllNamed(Routes.home);
 
         // Clear form
         emailController.clear();
