@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:my_sadari/app/widgets/app_card_info.dart';
 
 import '../../../routes/app_pages.dart';
 import '../../../styles/app_colors.dart';
@@ -78,74 +79,12 @@ class NewsView extends GetView<NewsController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header Section
-            Container(
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.teal2.withValues(alpha: 0.9),
-                    AppColors.blue1.withValues(alpha: 0.8),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.teal2.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Container(
-                padding: EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.white.withValues(alpha: 0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.health_and_safety_outlined,
-                        size: 28,
-                        color: AppColors.white,
-                      ),
-                    ),
-                    SizedBox(width: 18),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Pilih Sumber Berita',
-                            style: AppTextStyle.bodyLarge1.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.white,
-                              fontSize: 18,
-                            ),
-                          ),
-                          SizedBox(height: 6),
-                          Text(
-                            'Dapatkan informasi kesehatan payudara dari berbagai sumber terpercaya',
-                            style: AppTextStyle.bodySmall1.copyWith(
-                              color: AppColors.white.withValues(alpha: 0.9),
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            AppCardInfo(
+              title: 'Pilih Sumber Berita',
+              subtitle:
+                  'Dapatkan informasi kesehatan payudara dari berbagai sumber terpercaya',
+              color: AppColors.teal2,
+              icon: Icons.health_and_safety_outlined,
             ),
 
             SizedBox(height: 20), // News Sources List
