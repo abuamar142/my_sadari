@@ -450,11 +450,11 @@ class HomeView extends GetView<HomeController> {
                     title: "Splash Screen",
                     onTap: () => Get.toNamed(Routes.splash),
                   ),
-                  _buildDrawerItem(
-                    icon: Icons.start_outlined,
-                    title: "Onboarding",
-                    onTap: () => Get.toNamed(Routes.onboarding),
-                  ),
+                  // _buildDrawerItem(
+                  //   icon: Icons.start_outlined,
+                  //   title: "Onboarding",
+                  //   onTap: () => Get.toNamed(Routes.onboarding),
+                  // ),
                   Divider(height: 32),
                 ],
 
