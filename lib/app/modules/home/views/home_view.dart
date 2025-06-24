@@ -415,11 +415,11 @@ class HomeView extends GetView<HomeController> {
                   title: "Riwayat Periksa",
                   onTap: () => Get.toNamed(Routes.history),
                 ),
-                _buildDrawerItem(
-                  icon: Icons.notifications_outlined,
-                  title: "Notifikasi",
-                  onTap: () => Get.toNamed(Routes.notification),
-                ),
+                // _buildDrawerItem(
+                //   icon: Icons.notifications_outlined,
+                //   title: "Notifikasi",
+                //   onTap: () => Get.toNamed(Routes.notification),
+                // ),
                 Divider(height: 32),
 
                 // Debug menu (if in debug mode)
