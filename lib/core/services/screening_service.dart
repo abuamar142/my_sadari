@@ -121,4 +121,53 @@ class ScreeningService extends GetxService {
     }
     return await createScreening(data);
   }
+
+  /// Get screening history with pagination for current user
+  Future<ApiResponseModel<ScreeningListResponse>> getScreeningHistory({
+    required String userId,
+    int page = 1,
+    int pageSize = 10,
+  }) async {
+    try {
+      final response = await _connect.request(
+        '$_baseUrl/screening_cancer',
+        'GET',
+        body: {
+          'page': page,
+          'pageSize': pageSize,
+          'filter': {'id_user': userId},
+        },
+        headers: _headers,
+      );
+
+      if (kDebugMode) {
+        print('Get screening history response: ${response.statusCode}');
+        print('Get screening history body: ${response.body}');
+      }
+
+      if (response.statusCode == 200) {
+        final screeningListResponse = ScreeningListResponse.fromJson(
+          response.body,
+        );
+        return ApiResponseModel<ScreeningListResponse>(
+          success: screeningListResponse.success,
+          message: 'Data history berhasil diambil',
+          data: screeningListResponse,
+        );
+      } else {
+        return ApiResponseModel<ScreeningListResponse>(
+          success: false,
+          message: 'Gagal mengambil data history: ${response.statusText}',
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting screening history: $e');
+      }
+      return ApiResponseModel<ScreeningListResponse>(
+        success: false,
+        message: 'Terjadi kesalahan: ${e.toString()}',
+      );
+    }
+  }
 }

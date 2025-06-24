@@ -183,6 +183,8 @@ class ScreeningController extends GetxController {
 
         final isRisk = anyYes;
         showResultBottomSheet(risk, isRisk);
+
+        isEditMode.value = true;
       } else {
         _showErrorSnackbar(response.message);
       }

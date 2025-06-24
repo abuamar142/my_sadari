@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
+import '../../../routes/app_pages.dart';
 import '../../../styles/app_colors.dart';
 import '../../../styles/app_dimension.dart';
 import '../../../styles/app_text_style.dart';
@@ -485,9 +486,8 @@ class ScreeningView extends GetView<ScreeningController> {
                     ),
                     onPressed: () {
                       Get.back();
-                      if (!controller.isEditMode.value) {
-                        controller.isEditMode.value = true;
-                      }
+
+                      Get.toNamed(Routes.history);
                     },
                     child: Text(
                       'Lihat Riwayat',
