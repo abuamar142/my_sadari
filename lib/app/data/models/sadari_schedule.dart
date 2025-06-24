@@ -7,7 +7,7 @@ class Schedule {
   final bool isActive;
   final DateTime createdAt;
   final String? notes;
-
+  final DateTime? completedAt; // Tanggal ketika SADARI selesai dilakukan
   Schedule({
     required this.id,
     required this.menstruationStartDate,
@@ -17,6 +17,7 @@ class Schedule {
     this.isActive = true,
     required this.createdAt,
     this.notes,
+    this.completedAt,
   });
 
   // Calculate sadari dates from menstruation start date
@@ -61,6 +62,7 @@ class Schedule {
       'isActive': isActive,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'notes': notes,
+      'completedAt': completedAt?.millisecondsSinceEpoch,
     };
   }
 
@@ -84,9 +86,13 @@ class Schedule {
       isActive: json['isActive'] ?? true,
       createdAt: DateTime.fromMillisecondsSinceEpoch(json['createdAt']),
       notes: json['notes'],
+      completedAt:
+          json['completedAt'] != null
+              ? DateTime.fromMillisecondsSinceEpoch(json['completedAt'])
+              : null,
     );
   }
-
+  
   // Copy with method for updates
   Schedule copyWith({
     String? id,
@@ -97,6 +103,7 @@ class Schedule {
     bool? isActive,
     DateTime? createdAt,
     String? notes,
+    DateTime? completedAt,
   }) {
     return Schedule(
       id: id ?? this.id,
@@ -108,6 +115,7 @@ class Schedule {
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       notes: notes ?? this.notes,
+      completedAt: completedAt ?? this.completedAt,
     );
   }
 
@@ -129,6 +137,8 @@ class Schedule {
     return today.isAfter(startDay.subtract(Duration(days: 1))) &&
         today.isBefore(endDay.add(Duration(days: 1)));
   }
+
+  bool get isCompleted => completedAt != null;
 
   // Get next reminder date
   DateTime? get nextReminderDate {

@@ -187,23 +187,28 @@ class ScheduleView extends GetView<ScheduleController> {
   }
 
   Widget _buildTodayReminderContent() {
+    final activeSchedule = controller.activeSchedule;
+    final isCompleted = activeSchedule?.isCompleted ?? false;
+
     return Column(
       children: [
         Container(
           padding: EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.purple1.withValues(alpha: 0.1),
+            color: (isCompleted ? Colors.green : AppColors.purple1).withValues(
+              alpha: 0.1,
+            ),
             borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
           ),
           child: Icon(
-            Icons.notifications_active,
+            isCompleted ? Icons.check_circle : Icons.notifications_active,
             size: 48,
-            color: AppColors.purple1,
+            color: isCompleted ? Colors.green : AppColors.purple1,
           ),
         ),
         SizedBox(height: 16),
         Text(
-          'Waktunya SADARI!',
+          isCompleted ? 'SADARI Selesai!' : 'Waktunya SADARI!',
           style: AppTextStyle.headingMedium1.copyWith(
             color: AppColors.black,
             fontWeight: FontWeight.bold,
@@ -211,29 +216,57 @@ class ScheduleView extends GetView<ScheduleController> {
         ),
         SizedBox(height: 8),
         Text(
-          'Hari ini adalah waktu yang tepat untuk melakukan pemeriksaan SADARI.',
+          isCompleted
+              ? 'Terima kasih! Anda telah menyelesaikan pemeriksaan SADARI untuk periode ini.'
+              : 'Hari ini adalah waktu yang tepat untuk melakukan pemeriksaan SADARI.',
           style: AppTextStyle.bodyMedium1.copyWith(color: Colors.grey[600]),
           textAlign: TextAlign.center,
         ),
         SizedBox(height: 20),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              // Navigate to SADARI tutorial or checklist
-              Get.toNamed('/sadari-tutorial');
-            },
-            icon: Icon(Icons.play_arrow, color: AppColors.white),
-            label: Text('Mulai SADARI', style: AppTextStyle.buttonText1),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.purple1,
-              padding: EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+        if (!isCompleted)
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                controller.navigateToTutorial();
+              },
+              icon: Icon(Icons.play_arrow, color: AppColors.white),
+              label: Text('Mulai SADARI', style: AppTextStyle.buttonText1),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.purple1,
+                padding: EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusMedium,
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+        if (isCompleted)
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.green.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+              border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 20),
+                SizedBox(width: 8),
+                Text(
+                  'Selesai pada ${controller.formatDate(activeSchedule!.completedAt!)}',
+                  style: AppTextStyle.bodyMedium1.copyWith(
+                    color: Colors.green,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
@@ -242,19 +275,27 @@ class ScheduleView extends GetView<ScheduleController> {
     dynamic schedule,
     Map<String, dynamic> windowInfo,
   ) {
+    final isCompleted = schedule.isCompleted;
+
     return Column(
       children: [
         Container(
           padding: EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.green.withValues(alpha: 0.1),
+            color: (isCompleted ? Colors.green : Colors.green).withValues(
+              alpha: 0.1,
+            ),
             borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
           ),
-          child: Icon(Icons.schedule, size: 48, color: Colors.green),
+          child: Icon(
+            isCompleted ? Icons.check_circle : Icons.schedule,
+            size: 48,
+            color: isCompleted ? Colors.green : Colors.green,
+          ),
         ),
         SizedBox(height: 16),
         Text(
-          'Periode SADARI Aktif',
+          isCompleted ? 'SADARI Selesai!' : 'Periode SADARI Aktif',
           style: AppTextStyle.headingMedium1.copyWith(
             color: AppColors.black,
             fontWeight: FontWeight.bold,
@@ -264,7 +305,9 @@ class ScheduleView extends GetView<ScheduleController> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.green.withValues(alpha: 0.1),
+            color: (isCompleted ? Colors.green : Colors.green).withValues(
+              alpha: 0.1,
+            ),
             borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
           ),
           child: Text(
@@ -277,10 +320,38 @@ class ScheduleView extends GetView<ScheduleController> {
         ),
         SizedBox(height: 12),
         Text(
-          'Lakukan pemeriksaan SADARI dalam periode ini untuk kesehatan optimal.',
+          isCompleted
+              ? 'Terima kasih! Anda telah menyelesaikan pemeriksaan SADARI untuk periode ini.'
+              : 'Lakukan pemeriksaan SADARI dalam periode ini untuk kesehatan optimal.',
           style: AppTextStyle.bodyMedium1.copyWith(color: Colors.grey[600]),
           textAlign: TextAlign.center,
         ),
+        if (isCompleted) ...[
+          SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.green.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+              border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 20),
+                SizedBox(width: 8),
+                Text(
+                  'Selesai pada ${controller.formatDate(schedule.completedAt!)}',
+                  style: AppTextStyle.bodyMedium1.copyWith(
+                    color: Colors.green,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -524,6 +595,22 @@ class ScheduleView extends GetView<ScheduleController> {
             'SADARI: ${windowInfo['windowDays']}',
             style: AppTextStyle.bodyMedium1.copyWith(color: Colors.grey[600]),
           ),
+          if (schedule.isCompleted) ...[
+            SizedBox(height: AppDimensions.paddingSmall),
+            Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 16),
+                SizedBox(width: 4),
+                Text(
+                  'Selesai pada ${controller.formatDate(schedule.completedAt!)}',
+                  style: AppTextStyle.caption.copyWith(
+                    color: Colors.green,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
           if (schedule.notes != null && schedule.notes!.isNotEmpty) ...[
             SizedBox(height: AppDimensions.paddingSmall),
             Text(

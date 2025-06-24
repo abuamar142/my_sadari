@@ -271,4 +271,48 @@ class ScheduleService extends GetxService {
 
     return false;
   }
+
+  // Mark SADARI as completed for the active schedule
+  Future<bool> markSadariCompleted() async {
+    try {
+      final active = activeSchedule;
+      if (active == null) {
+        if (kDebugMode) {
+          print('❌ No active schedule found to mark as completed');
+        }
+        return false;
+      }
+
+      // Check if already completed
+      if (active.isCompleted) {
+        if (kDebugMode) {
+          print('⚠️ SADARI already completed for this period');
+        }
+        return false;
+      }
+
+      // Update the schedule with completion time
+      final updatedSchedule = active.copyWith(completedAt: DateTime.now());
+
+      // Update in the list
+      final index = _schedules.indexWhere((s) => s.id == active.id);
+      if (index != -1) {
+        _schedules[index] = updatedSchedule;
+        await _saveSchedules();
+
+        if (kDebugMode) {
+          print('✅ SADARI marked as completed for schedule ${active.id}');
+        }
+
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error marking SADARI as completed: $e');
+      }
+      return false;
+    }
+  }
 }

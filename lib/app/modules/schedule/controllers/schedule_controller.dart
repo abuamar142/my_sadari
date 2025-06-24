@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/services/schedule_service.dart';
 import '../../../data/models/sadari_schedule.dart';
+import '../../../routes/app_pages.dart';
 
 class ScheduleController extends GetxController {
   final ScheduleService _scheduleService = Get.find<ScheduleService>();
@@ -597,5 +598,46 @@ class ScheduleController extends GetxController {
         ),
       ),
     );
+  }
+
+  // Navigate to tutorial and handle completion
+  Future<void> navigateToTutorial() async {
+    try {
+      final result = await Get.toNamed(
+        Routes.tutorial,
+        arguments: {'fromSchedule': true},
+      );
+
+      if (result == true) {
+        // SADARI completed successfully
+        final success = await _scheduleService.markSadariCompleted();
+
+        if (success) {
+          Get.snackbar(
+            '🎉 SADARI Selesai!',
+            'Pemeriksaan SADARI telah berhasil diselesaikan. Terima kasih telah menjaga kesehatan payudara Anda!',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 4),
+            icon: Icon(Icons.check_circle, color: Colors.white),
+            margin: EdgeInsets.all(16),
+          );
+        } else {
+          Get.snackbar(
+            'Info',
+            'SADARI sudah pernah diselesaikan untuk periode ini',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.orange,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 3),
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error in navigateToTutorial: $e');
+      }
+    }
   }
 }

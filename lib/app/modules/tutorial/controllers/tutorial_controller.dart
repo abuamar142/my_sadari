@@ -5,6 +5,9 @@ import '../../../styles/app_colors.dart';
 import '../../../utils/app_images.dart';
 
 class TutorialController extends GetxController {
+  bool get isFromSchedule =>
+      Get.arguments != null && Get.arguments['fromSchedule'] == true;
+
   /// Get tutorial steps data
   List<StepModel> get tutorialSteps => [
     StepModel(
