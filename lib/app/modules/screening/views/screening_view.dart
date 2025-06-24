@@ -403,7 +403,7 @@ class ScreeningView extends GetView<ScreeningController> {
                     ),
                   )
                   : Text(
-                    controller.submitButtonText,
+                    controller.isEditMode.value ? 'UBAH' : 'KIRIM',
                     style: AppTextStyle.buttonText1,
                   ),
         ),

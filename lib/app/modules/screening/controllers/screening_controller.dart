@@ -58,8 +58,6 @@ class ScreeningController extends GetxController {
 
   void selectFalse(int index) => answers[index].value = 1;
 
-  String get submitButtonText => isEditMode.value ? 'UBAH' : 'KIRIM';
-
   Future<void> refreshScreeningData() async {
     await _fetchExistingScreeningData();
   }
