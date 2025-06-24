@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
-import '../../../routes/app_pages.dart';
 import '../../../styles/app_colors.dart';
 import '../../../styles/app_dimension.dart';
 import '../../../styles/app_text_style.dart';
@@ -70,7 +70,6 @@ class ScreeningView extends GetView<ScreeningController> {
                 ),
               );
             }
-
             return SingleChildScrollView(
               child: Container(
                 padding: EdgeInsets.all(AppDimensions.paddingLarge),
@@ -170,6 +169,24 @@ class ScreeningView extends GetView<ScreeningController> {
                 height: 1.5,
               ),
             ),
+            if (controller.isEditMode.value &&
+                controller.existingScreening.value != null)
+              Padding(
+                padding: EdgeInsets.only(top: 12),
+                child: Row(
+                  children: [
+                    Icon(Icons.update, size: 16, color: AppColors.teal1),
+                    SizedBox(width: 6),
+                    Text(
+                      'Terakhir diperbarui: ${DateFormat('dd MMM yyyy, HH:mm', 'id_ID').format(controller.existingScreening.value!.updatedAt.toLocal())}',
+                      style: AppTextStyle.bodySmall1.copyWith(
+                        color: AppColors.teal1,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
@@ -468,7 +485,9 @@ class ScreeningView extends GetView<ScreeningController> {
                     ),
                     onPressed: () {
                       Get.back();
-                      Get.toNamed(Routes.history);
+                      if (!controller.isEditMode.value) {
+                        controller.isEditMode.value = true;
+                      }
                     },
                     child: Text(
                       'Lihat Riwayat',

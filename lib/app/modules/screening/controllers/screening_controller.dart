@@ -60,6 +60,10 @@ class ScreeningController extends GetxController {
 
   String get submitButtonText => isEditMode.value ? 'UBAH' : 'KIRIM';
 
+  Future<void> refreshScreeningData() async {
+    await _fetchExistingScreeningData();
+  }
+
   // Callback function to be set by the view
   Function(String, bool)? onShowResult;
 
@@ -171,6 +175,8 @@ class ScreeningController extends GetxController {
 
       // 5. Handle response
       if (response.success) {
+        await _fetchExistingScreeningData();
+
         final anyYes = answers.any((r) => r.value == 2);
         final risk =
             anyYes
