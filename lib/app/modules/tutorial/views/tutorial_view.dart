@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/models/step_model.dart';
+import '../../../routes/app_pages.dart';
 import '../../../styles/app_colors.dart';
 import '../../../styles/app_dimension.dart';
 import '../../../styles/app_text_style.dart';
@@ -391,7 +392,7 @@ class TutorialView extends GetView<TutorialController> {
                     size: 20,
                   ),
                   label: Text(
-                    'Selesai Tutorial',
+                    'Selesai SADARI',
                     style: AppTextStyle.buttonText1.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -416,102 +417,124 @@ class TutorialView extends GetView<TutorialController> {
     );
   }
 
-  void _completeTutorial() {
-    // Show confirmation dialog
+  void _completeTutorial() async {
+    // Mark SADARI as completed first if accessed from schedule
+    if (controller.isFromSchedule) {
+      await controller.markSadariCompleted();
+
+      // Show snackbar
+      Get.snackbar(
+        '🎉 SADARI Selesai!',
+        'Pemeriksaan SADARI telah berhasil diselesaikan. Terima kasih telah menjaga kesehatan payudara Anda!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+        icon: Icon(Icons.check_circle, color: Colors.white),
+        margin: EdgeInsets.all(16),
+      );
+    }
+
+    // Show options dialog after completion
     Get.dialog(
       AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
         ),
-        title: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.teal1.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+        title: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.teal1.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.check_circle,
+                  color: AppColors.teal1,
+                  size: 24,
+                ),
               ),
-              child: Icon(Icons.help_outline, color: AppColors.teal1, size: 24),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Konfirmasi',
+              SizedBox(width: 12),
+              Text(
+                'SADARI Selesai!',
                 style: AppTextStyle.headingMedium1.copyWith(
                   color: AppColors.black,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              'Apakah Anda sudah melakukan semua langkah pemeriksaan SADARI?',
+              'Apa yang ingin Anda lakukan selanjutnya?',
+              textAlign: TextAlign.center,
               style: AppTextStyle.bodyMedium1.copyWith(
                 color: AppColors.black,
                 height: 1.4,
               ),
             ),
-            SizedBox(height: 12),
-            Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.teal1.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'Dengan mengklik "Ya, Selesai", Anda mengkonfirmasi bahwa telah menyelesaikan pemeriksaan SADARI untuk periode ini.',
-                style: AppTextStyle.bodySmall1.copyWith(
-                  color: AppColors.teal1,
-                  fontStyle: FontStyle.italic,
-                  height: 1.3,
-                ),
-              ),
-            ),
           ],
         ),
+        actionsAlignment: MainAxisAlignment.center,
         actions: [
-          OutlinedButton.icon(
-            onPressed: () => Get.back(),
-            icon: Icon(Icons.arrow_back, color: Colors.grey[600], size: 18),
-            label: Text(
-              'Belum',
-              style: AppTextStyle.buttonText1.copyWith(
-                color: Colors.grey[600],
-                fontSize: 14,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: Colors.grey.shade300),
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-          SizedBox(width: 12),
-          ElevatedButton.icon(
-            onPressed: () {
-              Get.back();
+          Column(
+            children: [
+              SizedBox(
+                width: 200,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Get.back();
 
-              Get.back(result: true);
-            },
-            icon: Icon(Icons.check, color: AppColors.white, size: 18),
-            label: Text(
-              'Ya, Selesai',
-              style: AppTextStyle.buttonText1.copyWith(fontSize: 14),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.teal1,
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                    Get.offNamed(Routes.schedule);
+                  },
+                  icon: Icon(Icons.schedule, color: AppColors.teal1, size: 18),
+                  label: Text(
+                    'Kembali ke Jadwal',
+                    style: AppTextStyle.buttonText1.copyWith(
+                      color: AppColors.teal1,
+                      fontSize: 14,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: AppColors.teal1),
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
               ),
-            ),
+              SizedBox(height: 12),
+              SizedBox(
+                width: 200,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Get.back();
+
+                    Get.offNamed(Routes.screening);
+                  },
+                  icon: Icon(Icons.quiz, color: AppColors.white, size: 18),
+                  label: Text(
+                    'Lanjut Screening',
+                    style: AppTextStyle.buttonText1.copyWith(fontSize: 14),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.purple1,
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

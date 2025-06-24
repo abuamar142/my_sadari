@@ -600,43 +600,24 @@ class ScheduleController extends GetxController {
     );
   }
 
-  // Navigate to tutorial and handle completion
+  // Navigate to tutorial
   Future<void> navigateToTutorial() async {
     try {
-      final result = await Get.toNamed(
-        Routes.tutorial,
-        arguments: {'fromSchedule': true},
-      );
-
-      if (result == true) {
-        // SADARI completed successfully
-        final success = await _scheduleService.markSadariCompleted();
-
-        if (success) {
-          Get.snackbar(
-            '🎉 SADARI Selesai!',
-            'Pemeriksaan SADARI telah berhasil diselesaikan. Terima kasih telah menjaga kesehatan payudara Anda!',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-            duration: const Duration(seconds: 4),
-            icon: Icon(Icons.check_circle, color: Colors.white),
-            margin: EdgeInsets.all(16),
-          );
-        } else {
-          Get.snackbar(
-            'Info',
-            'SADARI sudah pernah diselesaikan untuk periode ini',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.orange,
-            colorText: Colors.white,
-            duration: const Duration(seconds: 3),
-          );
-        }
-      }
+      await Get.toNamed(Routes.tutorial, arguments: {'fromSchedule': true});
     } catch (e) {
       if (kDebugMode) {
         print('❌ Error in navigateToTutorial: $e');
+      }
+    }
+  }
+
+  // Navigate to screening
+  Future<void> navigateToScreening() async {
+    try {
+      await Get.toNamed(Routes.screening, arguments: {'fromSchedule': true});
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error in navigateToScreening: $e');
       }
     }
   }

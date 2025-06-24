@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/schedule_service.dart';
 import '../../../../core/services/screening_service.dart';
 import '../../../styles/app_colors.dart';
 import '../models/screening_data_model.dart';
@@ -20,11 +21,15 @@ class ScreeningController extends GetxController {
   final storage = GetStorage();
   late final AuthService _authService;
   late final ScreeningService _screeningService;
+  final ScheduleService scheduleService = Get.find<ScheduleService>();
   final RxBool isLoading = false.obs;
   final RxBool isLoadingData = false.obs;
   final RxBool isEditMode = false.obs;
   final Rx<ScreeningItemWithResponden?> existingScreening =
       Rx<ScreeningItemWithResponden?>(null);
+
+  bool get isFromSchedule =>
+      Get.arguments != null && Get.arguments['fromSchedule'] == true;
 
   final statements = <Statement>[
     Statement('Usia saat menstruasi pertama dibawah 12 tahun', false),

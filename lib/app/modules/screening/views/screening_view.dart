@@ -30,7 +30,9 @@ class ScreeningView extends GetView<ScreeningController> {
           elevation: 0,
           centerTitle: true,
           leading: IconButton(
-            onPressed: () => Get.back(),
+            onPressed: () {
+              Get.back(result: controller.isFromSchedule ? true : null);
+            },
             icon: Icon(Icons.arrow_back, color: AppColors.white),
           ),
           automaticallyImplyLeading: false,
@@ -404,7 +406,7 @@ class ScreeningView extends GetView<ScreeningController> {
                     ),
                   )
                   : Text(
-                    controller.isEditMode.value ? 'UBAH' : 'KIRIM',
+                    controller.isEditMode.value ? 'SIMPAN' : 'KIRIM',
                     style: AppTextStyle.buttonText1,
                   ),
         ),
@@ -454,6 +456,10 @@ class ScreeningView extends GetView<ScreeningController> {
                   child: OutlinedButton(
                     onPressed: () {
                       Get.back();
+
+                      if (controller.isFromSchedule) {
+                        Get.back();
+                      }
                     },
                     style: OutlinedButton.styleFrom(
                       padding: EdgeInsets.symmetric(vertical: 12),
@@ -465,36 +471,41 @@ class ScreeningView extends GetView<ScreeningController> {
                       side: BorderSide(color: Colors.grey.shade300),
                     ),
                     child: Text(
-                      'Kembali',
+                      controller.isFromSchedule
+                          ? 'Kembali ke Jadwal'
+                          : 'Kembali',
                       style: AppTextStyle.bodyLarge1.copyWith(
                         color: Colors.grey.shade600,
                       ),
                     ),
                   ),
                 ),
-                SizedBox(width: AppDimensions.paddingMedium),
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isRisk ? AppColors.red : AppColors.teal1,
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.radiusMedium,
+                if (!controller.isFromSchedule) ...[
+                  SizedBox(width: AppDimensions.paddingMedium),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            isRisk ? AppColors.red : AppColors.teal1,
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusMedium,
+                          ),
                         ),
                       ),
-                    ),
-                    onPressed: () {
-                      Get.back();
+                      onPressed: () {
+                        Get.back();
 
-                      Get.toNamed(Routes.history);
-                    },
-                    child: Text(
-                      'Lihat Riwayat',
-                      style: AppTextStyle.buttonText1,
+                        Get.toNamed(Routes.history);
+                      },
+                      child: Text(
+                        'Lihat Riwayat',
+                        style: AppTextStyle.buttonText1,
+                      ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
             SizedBox(height: MediaQuery.of(Get.context!).padding.bottom),

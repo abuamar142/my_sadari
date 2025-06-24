@@ -1,12 +1,19 @@
 import 'package:get/get.dart';
 
 import '../../../../core/models/step_model.dart';
+import '../../../../core/services/schedule_service.dart';
 import '../../../styles/app_colors.dart';
 import '../../../utils/app_images.dart';
 
 class TutorialController extends GetxController {
+  final ScheduleService _scheduleService = Get.find<ScheduleService>();
+
   bool get isFromSchedule =>
       Get.arguments != null && Get.arguments['fromSchedule'] == true;
+
+  Future<bool> markSadariCompleted() async {
+    return await _scheduleService.markSadariCompleted();
+  }
 
   /// Get tutorial steps data
   List<StepModel> get tutorialSteps => [
