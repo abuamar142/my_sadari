@@ -426,7 +426,7 @@ class TutorialView extends GetView<TutorialController> {
       Get.snackbar(
         '🎉 SADARI Selesai!',
         'Pemeriksaan SADARI telah berhasil diselesaikan. Terima kasih telah menjaga kesehatan payudara Anda!',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green,
         colorText: Colors.white,
         duration: const Duration(seconds: 4),

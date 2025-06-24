@@ -68,7 +68,7 @@ class ScheduleController extends GetxController {
         Get.snackbar(
           'Izin Diberikan',
           'Notifikasi berhasil diaktifkan untuk pengingat SADARI',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.green,
           colorText: Colors.white,
           duration: const Duration(seconds: 3),
@@ -77,7 +77,7 @@ class ScheduleController extends GetxController {
         Get.snackbar(
           'Izin Ditolak',
           'Silakan aktifkan notifikasi di pengaturan aplikasi untuk mendapatkan pengingat SADARI',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red,
           colorText: Colors.white,
           duration: const Duration(seconds: 4),
@@ -100,7 +100,7 @@ class ScheduleController extends GetxController {
       Get.snackbar(
         'Error',
         'Terjadi kesalahan saat meminta izin notifikasi',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -117,7 +117,7 @@ class ScheduleController extends GetxController {
       Get.snackbar(
         'Izin Notifikasi',
         'Notifikasi perlu diaktifkan untuk pengingat SADARI',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.orange,
         colorText: Colors.white,
         duration: const Duration(seconds: 4),
