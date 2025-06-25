@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../../styles/app_colors.dart';
 import '../../../styles/app_dimension.dart';
 import '../../../styles/app_text_style.dart';
+import '../../../widgets/app_dialog.dart';
 import '../controllers/schedule_controller.dart';
 
 class ScheduleView extends GetView<ScheduleController> {
@@ -680,131 +681,103 @@ class ScheduleView extends GetView<ScheduleController> {
   }
 
   void _showNotificationInfoDialog() {
-    Get.dialog(
-      Obx(() {
+    AppDialog.show(
+      title: 'Notifikasi Aktif',
+      headerIcon: Icons.notifications_active,
+      headerColor: Colors.green,
+      headerSecondaryColor: Colors.green.withValues(alpha: 0.8),
+      content:
+          'Pengingat SADARI telah diaktifkan dan akan dikirim sesuai jadwal.',
+      customContent: Obx(() {
         final status = controller.notificationStatus;
         final scheduleMode = status['scheduleMode'] ?? 'Tidak Diketahui';
         final hasExactAlarm = status['hasExactAlarm'] ?? false;
 
-        return AlertDialog(
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.notifications_active, color: Colors.green),
-              SizedBox(width: 8),
-              Text('Notifikasi Aktif'),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Pengingat SADARI telah diaktifkan dan akan dikirim sesuai jadwal.',
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(Icons.schedule, size: 16, color: Colors.grey[600]),
-                  SizedBox(width: 8),
-                  Text(
-                    'Waktu: 09:00 WIB',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
-                  SizedBox(width: 8),
-                  Text(
-                    'Hari ke-7 s/d ke-10 setelah menstruasi',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(
-                    hasExactAlarm ? Icons.alarm : Icons.alarm_off,
-                    size: 16,
-                    color: hasExactAlarm ? Colors.green : Colors.orange,
-                  ),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Mode: $scheduleMode',
-                      style: AppTextStyle.bodyMedium1.copyWith(
-                        color: hasExactAlarm ? Colors.green : Colors.orange,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (!hasExactAlarm) ...[
-                SizedBox(height: AppDimensions.paddingMedium),
-                Container(
-                  padding: EdgeInsets.all(AppDimensions.paddingMedium),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusSmall,
-                    ),
-                  ),
-                  child: Text(
-                    'ℹ️ Notifikasi mungkin tidak tepat waktu karena batasan sistem. Untuk pengingat yang lebih akurat, aktifkan izin alarm tepat waktu di pengaturan.',
-                    style: AppTextStyle.caption.copyWith(
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Get.back(),
-              child: Text(
-                'Tutup',
-                style: AppTextStyle.bodyMedium1.copyWith(
-                  color: Colors.grey[600],
-                ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Pengingat SADARI telah diaktifkan dan akan dikirim sesuai jadwal.',
+              textAlign: TextAlign.center,
+              style: AppTextStyle.bodyMedium1.copyWith(
+                color: AppColors.black,
+                height: 1.5,
+                fontWeight: FontWeight.w500,
               ),
             ),
-            if (!hasExactAlarm)
-              TextButton(
-                onPressed: () {
-                  Get.back();
-                  controller.checkNotificationPermission();
-                },
-                child: Text(
-                  'Pengaturan',
-                  style: AppTextStyle.bodyMedium1.copyWith(
-                    color: AppColors.purple1,
-                  ),
-                ),
-              ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.purple1,
-                shape: RoundedRectangleBorder(
+            SizedBox(height: 16),
+            InfoBox(
+              text: 'Waktu: 09:00 WIB',
+              icon: Icons.schedule,
+              color: AppColors.teal1,
+            ),
+            SizedBox(height: 8),
+            InfoBox(
+              text: 'Hari ke-7 s/d ke-10 setelah menstruasi',
+              icon: Icons.calendar_today,
+              color: AppColors.teal1,
+            ),
+            SizedBox(height: 8),
+            InfoBox(
+              text: 'Mode: $scheduleMode',
+              icon: hasExactAlarm ? Icons.alarm : Icons.alarm_off,
+              color: hasExactAlarm ? Colors.green : Colors.orange,
+            ),
+            if (!hasExactAlarm) ...[
+              SizedBox(height: 16),
+              Container(
+                padding: EdgeInsets.all(AppDimensions.paddingMedium),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusSmall,
                   ),
+                  border: Border.all(
+                    color: Colors.orange.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Notifikasi mungkin tidak tepat waktu karena batasan sistem. Untuk pengingat yang lebih akurat, aktifkan izin alarm tepat waktu di pengaturan.',
+                        style: AppTextStyle.bodySmall1.copyWith(
+                          color: Colors.orange,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              onPressed: () {
-                Get.back();
-                controller.testNotification();
-              },
-              child: Text('Test Notifikasi', style: AppTextStyle.buttonText1),
-            ),
+            ],
           ],
         );
       }),
+      actions: [
+        if (controller.notificationStatus['hasExactAlarm'] == false)
+          DialogAction(
+            label: 'Pengaturan',
+            type: DialogActionType.secondary,
+            color: AppColors.purple1,
+            onPressed: () {
+              Get.back();
+              controller.checkNotificationPermission();
+            },
+          ),
+        DialogAction(
+          label: 'Test Notifikasi',
+          type: DialogActionType.primary,
+          color: AppColors.purple1,
+          onPressed: () {
+            Get.back();
+            controller.testNotification();
+          },
+        ),
+      ],
+      barrierDismissible: true,
     );
   }
 }

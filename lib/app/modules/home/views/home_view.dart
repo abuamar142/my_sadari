@@ -1,12 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:my_sadari/app/utils/app_images.dart';
 
 import '../../../routes/app_pages.dart';
 import '../../../styles/app_colors.dart';
 import '../../../styles/app_dimension.dart';
 import '../../../styles/app_text_style.dart';
+import '../../../utils/app_images.dart';
+import '../../../widgets/app_dialog.dart';
 import '../controllers/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -48,42 +49,30 @@ class HomeView extends GetView<HomeController> {
 
   /// Show logout confirmation dialog
   void _showLogoutConfirmation() {
-    Get.dialog(
-      AlertDialog(
-        title: Text(
-          'Konfirmasi Logout',
-          style: AppTextStyle.headingMedium1.copyWith(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+    AppDialog.show(
+      title: 'Konfirmasi Logout',
+      headerIcon: Icons.logout,
+      headerColor: AppColors.red,
+      headerSecondaryColor: AppColors.pink,
+      content: 'Apakah Anda yakin ingin keluar dari aplikasi?',
+      actions: [
+        DialogAction(
+          label: 'Batal',
+          type: DialogActionType.secondary,
+          onPressed: () => Get.back(),
         ),
-        content: Text(
-          'Apakah Anda yakin ingin keluar dari aplikasi?',
-          style: AppTextStyle.bodyMedium1.copyWith(fontSize: 14),
+        DialogAction(
+          label: 'Logout',
+          type: DialogActionType.primary,
+          color: AppColors.red,
+          icon: Icons.logout,
+          onPressed: () {
+            Get.back();
+            controller.logout();
+          },
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(
-              'Batal',
-              style: AppTextStyle.bodyMedium1.copyWith(fontSize: 14),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Get.back(); // Close dialog
-              controller.logout(); // Perform logout
-            },
-            child: Text(
-              'Logout',
-              style: AppTextStyle.bodyMedium1.copyWith(
-                fontSize: 14,
-                color: Colors.red,
-              ),
-            ),
-          ),
-        ],
-      ),
+      ],
+      barrierDismissible: false,
     );
   }
 

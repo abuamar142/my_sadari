@@ -6,6 +6,8 @@ import '../../../../core/services/notification_service.dart';
 import '../../../../core/services/schedule_service.dart';
 import '../../../data/models/sadari_schedule.dart';
 import '../../../routes/app_pages.dart';
+import '../../../styles/app_colors.dart';
+import '../../../widgets/app_dialog.dart';
 
 class ScheduleController extends GetxController {
   final ScheduleService _scheduleService = Get.find<ScheduleService>();
@@ -185,19 +187,27 @@ class ScheduleController extends GetxController {
   // Delete schedule
   Future<void> deleteSchedule(String scheduleId) async {
     final confirmed = await Get.dialog<bool>(
-      AlertDialog(
-        title: Text('Hapus Jadwal'),
-        content: Text('Apakah Anda yakin ingin menghapus jadwal ini?'),
+      AppDialog(
+        title: 'Hapus Jadwal',
+        headerIcon: Icons.delete_outline,
+        headerColor: AppColors.red,
+        headerSecondaryColor: AppColors.pink,
+        content: 'Apakah Anda yakin ingin menghapus jadwal ini?',
         actions: [
-          TextButton(
+          DialogAction(
+            label: 'Batal',
+            type: DialogActionType.secondary,
             onPressed: () => Get.back(result: false),
-            child: Text('Batal'),
           ),
-          TextButton(
+          DialogAction(
+            label: 'Hapus',
+            type: DialogActionType.primary,
+            color: AppColors.red,
+            icon: Icons.delete,
             onPressed: () => Get.back(result: true),
-            child: Text('Hapus', style: TextStyle(color: Colors.red)),
           ),
         ],
+        barrierDismissible: false,
       ),
     );
 

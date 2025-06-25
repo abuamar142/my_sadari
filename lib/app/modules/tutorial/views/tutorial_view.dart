@@ -8,6 +8,7 @@ import '../../../styles/app_colors.dart';
 import '../../../styles/app_dimension.dart';
 import '../../../styles/app_text_style.dart';
 import '../../../widgets/app_card_info.dart';
+import '../../../widgets/app_dialog.dart';
 import '../controllers/tutorial_controller.dart';
 
 class TutorialView extends GetView<TutorialController> {
@@ -464,560 +465,101 @@ class TutorialView extends GetView<TutorialController> {
   }
 
   void _showScreeningOptionsDialog() {
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-        ),
-        contentPadding: EdgeInsets.zero,
-        content: Container(
-          width: double.maxFinite,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-            color: AppColors.white,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.teal1.withValues(alpha: 0.1),
-                      AppColors.teal2.withValues(alpha: 0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(AppDimensions.radiusLarge),
-                    topRight: Radius.circular(AppDimensions.radiusLarge),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [AppColors.teal1, AppColors.teal2],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.teal1.withValues(alpha: 0.3),
-                            blurRadius: 6,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.check_circle_rounded,
-                        color: AppColors.white,
-                        size: 24,
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        'SADARI Selesai!',
-                        style: AppTextStyle.headingMedium1.copyWith(
-                          color: AppColors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Content
-              Padding(
-                padding: EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    Text(
-                      'Apakah Anda ingin melakukan update screening faktor risiko?',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyle.bodyMedium1.copyWith(
-                        color: AppColors.black,
-                        height: 1.5,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Container(
-                      padding: EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.teal1.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: AppColors.teal1.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: AppColors.teal1,
-                            size: 20,
-                          ),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Ini akan membantu memperbarui profil risiko Anda',
-                              style: AppTextStyle.bodySmall1.copyWith(
-                                color: AppColors.teal1,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Actions
-              Padding(
-                padding: EdgeInsets.fromLTRB(24, 0, 24, 24),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Get.back();
-                          _showAbnormalityDialog();
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: Colors.grey[400]!),
-                          padding: EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: Text(
-                          'Tidak',
-                          style: AppTextStyle.buttonText1.copyWith(
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Get.back();
-                          Get.offNamed(
-                            Routes.screening,
-                            arguments: {'fromSchedule': true},
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.purple1,
-                          padding: EdgeInsets.symmetric(vertical: 14),
-                          elevation: 3,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          shadowColor: AppColors.purple1.withValues(alpha: 0.3),
-                        ),
-                        child: Text(
-                          'Ya, Update',
-                          style: AppTextStyle.buttonText1.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+    AppDialog.show(
+      title: 'SADARI Selesai!',
+      headerIcon: Icons.check_circle_rounded,
+      headerColor: AppColors.teal1,
+      headerSecondaryColor: AppColors.teal2,
+      content: 'Apakah Anda ingin melakukan update screening faktor risiko?',
+      infoBox: InfoBox(
+        text: 'Ini akan membantu memperbarui profil risiko Anda',
+        icon: Icons.info_outline,
+        color: AppColors.teal1,
       ),
+      actions: [
+        DialogAction(
+          label: 'Tidak',
+          type: DialogActionType.secondary,
+          onPressed: () {
+            Get.back();
+            _showAbnormalityDialog();
+          },
+        ),
+        DialogAction(
+          label: 'Ya, Update',
+          type: DialogActionType.primary,
+          color: AppColors.purple1,
+          onPressed: () {
+            Get.back();
+            Get.offNamed(Routes.screening, arguments: {'fromSchedule': true});
+          },
+        ),
+      ],
       barrierDismissible: false,
     );
   }
 
   void _showAbnormalityDialog() {
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-        ),
-        contentPadding: EdgeInsets.zero,
-        content: Container(
-          width: double.maxFinite,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-            color: AppColors.white,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.orange.withValues(alpha: 0.1),
-                      AppColors.orange.withValues(alpha: 0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(AppDimensions.radiusLarge),
-                    topRight: Radius.circular(AppDimensions.radiusLarge),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            AppColors.orange,
-                            AppColors.orange.withValues(alpha: 0.8),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.orange.withValues(alpha: 0.3),
-                            blurRadius: 6,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.help_outline,
-                        color: AppColors.white,
-                        size: 24,
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        'Pertanyaan Wajib',
-                        style: AppTextStyle.headingMedium1.copyWith(
-                          color: AppColors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Content
-              Padding(
-                padding: EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Apakah setelah melakukan pemeriksaan SADARI ditemukan abnormalitas pada payudara?',
-                      textAlign: TextAlign.justify,
-                      style: AppTextStyle.bodyMedium1.copyWith(
-                        color: AppColors.black,
-                        height: 1.5,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Container(
-                      padding: EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.orange.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: AppColors.orange.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: AppColors.orange,
-                            size: 20,
-                          ),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Pertanyaan ini wajib dijawab',
-                              style: AppTextStyle.bodySmall1.copyWith(
-                                color: AppColors.orange,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Actions
-              Padding(
-                padding: EdgeInsets.fromLTRB(24, 0, 24, 24),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Get.back();
-                          Get.back();
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: AppColors.teal1),
-                          padding: EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: Text(
-                          'Tidak',
-                          style: AppTextStyle.buttonText1.copyWith(
-                            color: AppColors.teal1,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Get.back();
-                          _showAbnormalityWarning();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.red,
-                          padding: EdgeInsets.symmetric(vertical: 14),
-                          elevation: 3,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          shadowColor: AppColors.red.withValues(alpha: 0.3),
-                        ),
-                        child: Text(
-                          'Ya',
-                          style: AppTextStyle.buttonText1.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+    AppDialog.show(
+      title: 'Pertanyaan Wajib',
+      headerIcon: Icons.help_outline,
+      headerColor: AppColors.orange,
+      headerSecondaryColor: AppColors.orange.withValues(alpha: 0.8),
+      content:
+          'Apakah setelah melakukan pemeriksaan SADARI ditemukan abnormalitas pada payudara?',
+      infoBox: InfoBox(
+        text: 'Pertanyaan ini wajib dijawab',
+        icon: Icons.info_outline,
+        color: AppColors.orange,
       ),
+      actions: [
+        DialogAction(
+          label: 'Tidak',
+          type: DialogActionType.secondary,
+          color: AppColors.teal1,
+          onPressed: () {
+            Get.back();
+            Get.back();
+          },
+        ),
+        DialogAction(
+          label: 'Ya',
+          type: DialogActionType.primary,
+          color: AppColors.red,
+          onPressed: () {
+            Get.back();
+            _showAbnormalityWarning();
+          },
+        ),
+      ],
       barrierDismissible: false,
     );
   }
 
   void _showAbnormalityWarning() {
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-        ),
-        contentPadding: EdgeInsets.zero,
-        content: Container(
-          width: double.maxFinite,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-            color: AppColors.white,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.red.withValues(alpha: 0.1),
-                      AppColors.pink.withValues(alpha: 0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(AppDimensions.radiusLarge),
-                    topRight: Radius.circular(AppDimensions.radiusLarge),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [AppColors.red, AppColors.pink],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.red.withValues(alpha: 0.3),
-                            blurRadius: 6,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.warning_rounded,
-                        color: AppColors.white,
-                        size: 24,
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        'Peringatan Penting',
-                        style: AppTextStyle.headingMedium1.copyWith(
-                          color: AppColors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Content
-              Padding(
-                padding: EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            AppColors.red.withValues(alpha: 0.1),
-                            AppColors.pink.withValues(alpha: 0.05),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.red.withValues(alpha: 0.3),
-                          width: 2,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.local_hospital_rounded,
-                            color: AppColors.red,
-                            size: 48,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'Ditemukan adanya ketidaknormalan pada payudara. Segera periksakan ke pelayanan kesehatan terdekat.',
-                            textAlign: TextAlign.center,
-                            style: AppTextStyle.bodyMedium1.copyWith(
-                              color: AppColors.red,
-                              fontWeight: FontWeight.w600,
-                              height: 1.5,
-                            ),
-                          ),
-                          SizedBox(height: 16),
-                          Container(
-                            padding: EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.white,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: AppColors.red.withValues(alpha: 0.2),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.phone,
-                                  color: AppColors.red,
-                                  size: 20,
-                                ),
-                                SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Hubungi dokter atau puskesmas terdekat segera',
-                                    style: AppTextStyle.bodySmall1.copyWith(
-                                      color: AppColors.red,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Actions
-              Padding(
-                padding: EdgeInsets.fromLTRB(24, 0, 24, 24),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Get.back();
-                      Get.back();
-                    },
-                    icon: Icon(Icons.close, color: AppColors.white, size: 20),
-                    label: Text(
-                      'Tutup',
-                      style: AppTextStyle.buttonText1.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.red,
-                      padding: EdgeInsets.symmetric(vertical: 14),
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      shadowColor: AppColors.red.withValues(alpha: 0.3),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+    AppDialog.show(
+      title: 'Peringatan Penting',
+      headerIcon: Icons.warning_rounded,
+      headerColor: AppColors.red,
+      headerSecondaryColor: AppColors.pink,
+      content: '',
+      customContent: WarningContent(
+        message:
+            'Ditemukan adanya ketidaknormalan pada payudara. Segera periksakan ke pelayanan kesehatan terdekat.',
+        actionText: 'Hubungi dokter atau puskesmas terdekat segera',
       ),
+      actions: [
+        DialogAction(
+          label: 'Tutup',
+          type: DialogActionType.primary,
+          color: AppColors.red,
+          icon: Icons.close,
+          onPressed: () {
+            Get.back();
+            Get.back();
+          },
+        ),
+      ],
       barrierDismissible: false,
     );
   }
