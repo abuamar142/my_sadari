@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -33,35 +34,70 @@ class TutorialView extends GetView<TutorialController> {
           ),
           automaticallyImplyLeading: false,
         ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.all(AppDimensions.paddingLarge),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppCardInfo(
-                    title: 'Tutorial Sadari',
-                    subtitle:
-                        'Pelajari cara melakukan pemeriksaan payudara sendiri dengan benar',
-                    color: AppColors.orange,
-                    icon: Icons.health_and_safety_outlined,
-                  ),
-                  SizedBox(height: 24),
-                  _buildStepsSection(),
-                  _buildWarningSection(),
-                  if (controller.isFromSchedule) ...[
-                    SizedBox(height: 24),
-                    _buildCompletionSection(),
-                  ],
-                  SizedBox(height: 16),
-                ],
-              ),
-            ),
-          ),
-        ),
+        body: SafeArea(child: _buildBody()),
       ),
     );
+  }
+
+  Widget _buildBody() {
+    try {
+      return SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.all(AppDimensions.paddingLarge),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppCardInfo(
+                title: 'Tutorial Sadari',
+                subtitle:
+                    'Pelajari cara melakukan pemeriksaan payudara sendiri dengan benar',
+                color: AppColors.orange,
+                icon: Icons.health_and_safety_outlined,
+              ),
+              SizedBox(height: 24),
+              _buildStepsSection(),
+              _buildWarningSection(),
+              if (controller.isFromSchedule) ...[
+                SizedBox(height: 24),
+                _buildCompletionSection(),
+              ],
+              SizedBox(height: 16),
+            ],
+          ),
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error in TutorialView build: $e');
+      }
+      return Center(
+        child: Container(
+          padding: EdgeInsets.all(24),
+          margin: EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.error_outline, size: 48, color: Colors.red),
+              SizedBox(height: 16),
+              Text(
+                'Terjadi kesalahan saat memuat tutorial',
+                style: AppTextStyle.headingMedium1,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => Get.back(),
+                child: Text('Kembali'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildStepsSection() {

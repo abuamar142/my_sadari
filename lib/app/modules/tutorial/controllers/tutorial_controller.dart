@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/models/step_model.dart';
@@ -6,13 +7,40 @@ import '../../../styles/app_colors.dart';
 import '../../../utils/app_images.dart';
 
 class TutorialController extends GetxController {
-  final ScheduleService _scheduleService = Get.find<ScheduleService>();
+  late final ScheduleService _scheduleService;
+
+  @override
+  void onInit() {
+    super.onInit();
+    try {
+      _scheduleService = Get.find<ScheduleService>();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting ScheduleService in TutorialController: $e');
+      }
+    }
+  }
 
   bool get isFromSchedule =>
       Get.arguments != null && Get.arguments['fromSchedule'] == true;
 
   Future<bool> markSadariCompleted() async {
-    return await _scheduleService.markSadariCompleted();
+    try {
+      // Check if schedule service is available
+      if (!Get.isRegistered<ScheduleService>()) {
+        if (kDebugMode) {
+          print('ScheduleService not available');
+        }
+        return false;
+      }
+
+      return await _scheduleService.markSadariCompleted();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error marking SADARI completed: $e');
+      }
+      return false;
+    }
   }
 
   /// Get tutorial steps data

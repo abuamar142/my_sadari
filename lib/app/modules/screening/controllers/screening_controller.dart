@@ -21,7 +21,7 @@ class ScreeningController extends GetxController {
   final storage = GetStorage();
   late final AuthService _authService;
   late final ScreeningService _screeningService;
-  final ScheduleService scheduleService = Get.find<ScheduleService>();
+  late final ScheduleService scheduleService;
   final RxBool isLoading = false.obs;
   final RxBool isLoadingData = false.obs;
   final RxBool isEditMode = false.obs;
@@ -53,10 +53,36 @@ class ScreeningController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _authService = Get.find<AuthService>();
-    _screeningService = Get.find<ScreeningService>();
-    answers = List<RxInt>.generate(statements.length, (_) => 0.obs);
-    _fetchExistingScreeningData();
+
+    try {
+      _authService = Get.find<AuthService>();
+      _screeningService = Get.find<ScreeningService>();
+      scheduleService = Get.find<ScheduleService>();
+      answers = List<RxInt>.generate(statements.length, (_) => 0.obs);
+
+      // Delay the data fetching to avoid blocking UI initialization
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fetchExistingScreeningData();
+      });
+
+      // Add timeout fallback to ensure UI is not stuck in loading state
+      Future.delayed(Duration(seconds: 5), () {
+        if (isLoadingData.value) {
+          if (kDebugMode) {
+            print('Loading timeout - forcing loading state to false');
+          }
+          isLoadingData.value = false;
+        }
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error in ScreeningController onInit: $e');
+      }
+      // Still initialize answers even if services fail
+      answers = List<RxInt>.generate(statements.length, (_) => 0.obs);
+      // Ensure loading state is false
+      isLoadingData.value = false;
+    }
   }
 
   void selectTrue(int index) => answers[index].value = 2;
@@ -75,10 +101,19 @@ class ScreeningController extends GetxController {
   }
 
   Future<void> _fetchExistingScreeningData() async {
-    final currentUser = _authService.currentUser;
-    if (currentUser == null) return;
-
     try {
+      // Check if services are properly initialized
+      if (!Get.isRegistered<AuthService>() ||
+          !Get.isRegistered<ScreeningService>()) {
+        if (kDebugMode) {
+          print('Services not yet registered, skipping data fetch');
+        }
+        return;
+      }
+
+      final currentUser = _authService.currentUser;
+      if (currentUser == null) return;
+
       isLoadingData.value = true;
 
       final response = await _screeningService.getScreeningList(
@@ -121,6 +156,7 @@ class ScreeningController extends GetxController {
       isEditMode.value = false;
       existingScreening.value = null;
     } finally {
+      // Always set loading to false
       isLoadingData.value = false;
     }
   }
