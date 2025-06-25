@@ -38,7 +38,7 @@ class ScheduleService extends GetxService {
       Get.snackbar(
         'Error',
         'Gagal memuat jadwal: $e',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
     } finally {
       _isLoading.value = false;
@@ -55,7 +55,7 @@ class ScheduleService extends GetxService {
       Get.snackbar(
         'Error',
         'Gagal menyimpan jadwal: $e',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
     }
   }
@@ -83,7 +83,7 @@ class ScheduleService extends GetxService {
       Get.snackbar(
         'Berhasil',
         'Jadwal SADARI berhasil ditambahkan!',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Get.theme.primaryColor,
         colorText: Get.theme.colorScheme.onPrimary,
       );
@@ -93,7 +93,7 @@ class ScheduleService extends GetxService {
       Get.snackbar(
         'Error',
         'Gagal menambahkan jadwal: $e',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return false;
     } finally {
@@ -123,7 +123,7 @@ class ScheduleService extends GetxService {
       Get.snackbar(
         'Error',
         'Gagal mengupdate jadwal: $e',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return false;
     } finally {
@@ -145,7 +145,7 @@ class ScheduleService extends GetxService {
       Get.snackbar(
         'Berhasil',
         'Jadwal berhasil dihapus',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
 
       return true;
@@ -153,7 +153,7 @@ class ScheduleService extends GetxService {
       Get.snackbar(
         'Error',
         'Gagal menghapus jadwal: $e',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
       );
       return false;
     } finally {
