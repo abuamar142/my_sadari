@@ -8,6 +8,7 @@ import '../../../data/models/sadari_schedule.dart';
 import '../../../routes/app_pages.dart';
 import '../../../styles/app_colors.dart';
 import '../../../widgets/app_dialog.dart';
+import '../../../widgets/app_snackbar.dart';
 
 class ScheduleController extends GetxController {
   final ScheduleService _scheduleService = Get.find<ScheduleService>();
@@ -67,44 +68,27 @@ class ScheduleController extends GetxController {
       await _loadNotificationStatus();
 
       if (granted) {
-        Get.snackbar(
-          'Izin Diberikan',
-          'Notifikasi berhasil diaktifkan untuk pengingat SADARI',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
+        AppSnackbar.success(
+          title: 'Izin Diberikan',
+          message: 'Notifikasi berhasil diaktifkan untuk pengingat SADARI',
         );
       } else {
-        Get.snackbar(
-          'Izin Ditolak',
-          'Silakan aktifkan notifikasi di pengaturan aplikasi untuk mendapatkan pengingat SADARI',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 4),
-          mainButton: TextButton(
-            onPressed: () {
-              Get.back();
-              _notificationService.openNotificationSettings();
-            },
-            child: const Text(
-              'Buka Pengaturan',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
+        AppSnackbar.action(
+          title: 'Izin Ditolak',
+          message:
+              'Silakan aktifkan notifikasi di pengaturan aplikasi untuk mendapatkan pengingat SADARI',
+          actionLabel: 'Pengaturan',
+          onAction: () => _notificationService.openNotificationSettings(),
+          backgroundColor: AppColors.red,
         );
       }
     } catch (e) {
       if (kDebugMode) {
         print('❌ Error requesting notification permission: $e');
       }
-      Get.snackbar(
-        'Error',
-        'Terjadi kesalahan saat meminta izin notifikasi',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.error(
+        title: 'Error',
+        message: 'Terjadi kesalahan saat meminta izin notifikasi',
       );
     }
   }
@@ -116,19 +100,15 @@ class ScheduleController extends GetxController {
     await _loadNotificationStatus();
 
     if (!hasPermission) {
-      Get.snackbar(
-        'Izin Notifikasi',
-        'Notifikasi perlu diaktifkan untuk pengingat SADARI',
-        snackPosition: SnackPosition.TOP,
+      AppSnackbar.action(
+        title: 'Izin Notifikasi',
+        message: 'Notifikasi perlu diaktifkan untuk pengingat SADARI',
+        actionLabel: 'Buka Pengaturan',
+        onAction: () {
+          _notificationService.openNotificationSettings();
+        },
         backgroundColor: Colors.orange,
-        colorText: Colors.white,
         duration: const Duration(seconds: 4),
-        mainButton: TextButton(
-          onPressed: () {
-            _notificationService.openNotificationSettings();
-          },
-          child: Text('Buka Pengaturan', style: TextStyle(color: Colors.white)),
-        ),
       );
     }
   }

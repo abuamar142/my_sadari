@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../app/data/models/sadari_schedule.dart';
+import '../../app/widgets/app_snackbar.dart';
 import 'notification_service.dart';
 
 class ScheduleService extends GetxService {
@@ -35,11 +36,7 @@ class ScheduleService extends GetxService {
             schedulesList.map((json) => Schedule.fromJson(json)).toList();
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Gagal memuat jadwal: $e',
-        snackPosition: SnackPosition.TOP,
-      );
+      AppSnackbar.error(title: 'Error', message: 'Gagal memuat jadwal: $e');
     } finally {
       _isLoading.value = false;
     }
@@ -52,11 +49,7 @@ class ScheduleService extends GetxService {
           _schedules.map((schedule) => schedule.toJson()).toList();
       await _storage.write(_storageKey, jsonEncode(schedulesJson));
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Gagal menyimpan jadwal: $e',
-        snackPosition: SnackPosition.TOP,
-      );
+      AppSnackbar.error(title: 'Error', message: 'Gagal menyimpan jadwal: $e');
     }
   }
 
@@ -80,20 +73,16 @@ class ScheduleService extends GetxService {
       // Schedule notifications
       await _scheduleNotifications(newSchedule);
 
-      Get.snackbar(
-        'Berhasil',
-        'Jadwal SADARI berhasil ditambahkan!',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.primaryColor,
-        colorText: Get.theme.colorScheme.onPrimary,
+      AppSnackbar.success(
+        title: 'Berhasil',
+        message: 'Jadwal SADARI berhasil ditambahkan!',
       );
 
       return true;
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Gagal menambahkan jadwal: $e',
-        snackPosition: SnackPosition.TOP,
+      AppSnackbar.error(
+        title: 'Error',
+        message: 'Gagal menambahkan jadwal: $e',
       );
       return false;
     } finally {
@@ -120,11 +109,7 @@ class ScheduleService extends GetxService {
       }
       return false;
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Gagal mengupdate jadwal: $e',
-        snackPosition: SnackPosition.TOP,
-      );
+      AppSnackbar.error(title: 'Error', message: 'Gagal mengupdate jadwal: $e');
       return false;
     } finally {
       _isLoading.value = false;
@@ -142,19 +127,14 @@ class ScheduleService extends GetxService {
       // Cancel notifications for this schedule
       await _cancelNotifications(scheduleId);
 
-      Get.snackbar(
-        'Berhasil',
-        'Jadwal berhasil dihapus',
-        snackPosition: SnackPosition.TOP,
+      AppSnackbar.success(
+        title: 'Berhasil',
+        message: 'Jadwal berhasil dihapus',
       );
 
       return true;
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Gagal menghapus jadwal: $e',
-        snackPosition: SnackPosition.TOP,
-      );
+      AppSnackbar.error(title: 'Error', message: 'Gagal menghapus jadwal: $e');
       return false;
     } finally {
       _isLoading.value = false;

@@ -6,6 +6,7 @@ import '../../../routes/app_pages.dart';
 import '../../../styles/app_colors.dart';
 import '../../../styles/app_dimension.dart';
 import '../../../styles/app_text_style.dart';
+import '../../../widgets/app_snackbar.dart';
 import '../controllers/screening_controller.dart';
 
 class ScreeningView extends GetView<ScreeningController> {
@@ -382,14 +383,9 @@ class ScreeningView extends GetView<ScreeningController> {
                       (ans) => ans.value == 0,
                     );
                     if (hasUnanswered) {
-                      Get.snackbar(
-                        'Peringatan',
-                        'Harap jawab semua pernyataan sebelum submit.',
-                        backgroundColor: AppColors.red,
-                        colorText: AppColors.white,
-                        snackPosition: SnackPosition.TOP,
-                        margin: EdgeInsets.all(AppDimensions.paddingMedium),
-                        borderRadius: AppDimensions.radiusSmall,
+                      AppSnackbar.warning(
+                        title: 'Peringatan',
+                        message: 'Harap jawab semua pernyataan sebelum submit.',
                       );
                       return;
                     }

@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../widgets/app_snackbar.dart';
+
 class SignUpController extends GetxController {
   var hidePassword = true.obs;
   var hidePasswordConfirm = true.obs;
@@ -36,77 +38,40 @@ class SignUpController extends GetxController {
 
   bool _validateFields() {
     // Cek apakah semua field sudah terisi
-    if (nameController.text.trim().isEmpty &&
-        ageController.text.trim().isEmpty &&
-        phoneController.text.trim().isEmpty &&
-        emailController.text.trim().isEmpty &&
-        passwordController.text.isEmpty &&
+    if (nameController.text.trim().isEmpty ||
+        ageController.text.trim().isEmpty ||
+        phoneController.text.trim().isEmpty ||
+        emailController.text.trim().isEmpty ||
+        passwordController.text.isEmpty ||
         passwordConfirmController.text.isEmpty) {
-      Get.snackbar(
-        "Error",
-        "Semua field harus diisi",
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
-      );
+      AppSnackbar.error(title: "Error", message: "Semua field harus diisi");
       return false;
     }
 
     // Validasi format email
     if (!GetUtils.isEmail(emailController.text.trim())) {
-      Get.snackbar(
-        "Error",
-        "Format email tidak valid",
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
-      );
+      AppSnackbar.error(title: "Error", message: "Format email tidak valid");
       return false;
     }
 
     // Validasi umur harus berupa angka
     if (int.tryParse(ageController.text.trim()) == null) {
-      Get.snackbar(
-        "Error",
-        "Umur harus berupa angka",
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
-      );
+      AppSnackbar.error(title: "Error", message: "Umur harus berupa angka");
       return false;
     }
 
     // Cek apakah password dan konfirmasi password sama
     if (passwordController.text != passwordConfirmController.text) {
-      Get.snackbar(
-        "Error",
-        "Password dan konfirmasi password tidak sama",
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
+      AppSnackbar.error(
+        title: "Error",
+        message: "Password dan konfirmasi password tidak sama",
       );
       return false;
     }
 
     // Validasi panjang password minimal
     if (passwordController.text.length < 6) {
-      Get.snackbar(
-        "Error",
-        "Password minimal 6 karakter",
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
-      );
+      AppSnackbar.error(title: "Error", message: "Password minimal 6 karakter");
       return false;
     }
 
@@ -138,15 +103,10 @@ class SignUpController extends GetxController {
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (response.body['success'] == true) {
           // Show success message
-          Get.snackbar(
-            'Registrasi Berhasil',
-            'Akun berhasil dibuat! Silakan login dengan akun Anda.',
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Get.theme.colorScheme.primary,
-            colorText: Get.theme.colorScheme.onPrimary,
+          AppSnackbar.success(
+            title: 'Registrasi Berhasil',
+            message: 'Akun berhasil dibuat! Silakan login dengan akun Anda.',
             duration: const Duration(seconds: 3),
-            margin: const EdgeInsets.all(16),
-            borderRadius: 8,
           );
 
           // Clear form
@@ -155,15 +115,11 @@ class SignUpController extends GetxController {
           // Navigate to sign in page
           Get.offNamed('/sign-in');
         } else {
-          Get.snackbar(
-            'Registrasi Gagal',
-            response.body['message'] ?? 'Terjadi kesalahan saat registrasi',
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Get.theme.colorScheme.error,
-            colorText: Get.theme.colorScheme.onError,
+          AppSnackbar.error(
+            title: 'Registrasi Gagal',
+            message:
+                response.body['message'] ?? 'Terjadi kesalahan saat registrasi',
             duration: const Duration(seconds: 4),
-            margin: const EdgeInsets.all(16),
-            borderRadius: 8,
           );
         }
       } else {
@@ -173,27 +129,17 @@ class SignUpController extends GetxController {
           errorMessage = response.body['message'] ?? errorMessage;
         }
 
-        Get.snackbar(
-          'Registrasi Gagal',
-          errorMessage,
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Get.theme.colorScheme.error,
-          colorText: Get.theme.colorScheme.onError,
+        AppSnackbar.error(
+          title: 'Registrasi Gagal',
+          message: errorMessage,
           duration: const Duration(seconds: 4),
-          margin: const EdgeInsets.all(16),
-          borderRadius: 8,
         );
       }
     } catch (e) {
-      Get.snackbar(
-        'Registrasi Gagal',
-        'Terjadi kesalahan saat registrasi: ${e.toString()}',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
+      AppSnackbar.error(
+        title: 'Registrasi Gagal',
+        message: 'Terjadi kesalahan saat registrasi: ${e.toString()}',
         duration: const Duration(seconds: 4),
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
       );
     } finally {
       isLoading.value = false;

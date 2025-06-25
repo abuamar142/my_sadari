@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../app/data/models/api_response.dart';
+import '../../../app/widgets/app_snackbar.dart';
 import 'environment_service.dart';
 
 enum HttpMethod { get, post, put, patch, delete }
@@ -207,20 +208,7 @@ class ApiService extends GetxService {
 
   /// Show error snackbar
   void _showErrorSnackbar(String message) {
-    if (Get.isSnackbarOpen) {
-      Get.closeCurrentSnackbar();
-    }
-
-    Get.snackbar(
-      'Error',
-      message,
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Get.theme.colorScheme.error,
-      colorText: Get.theme.colorScheme.onError,
-      duration: const Duration(seconds: 4),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 8,
-    );
+    AppSnackbar.error(title: 'Error', message: message);
   }
 
   /// Log request details

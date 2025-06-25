@@ -6,7 +6,7 @@ import 'package:get_storage/get_storage.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/schedule_service.dart';
 import '../../../../core/services/screening_service.dart';
-import '../../../styles/app_colors.dart';
+import '../../../widgets/app_snackbar.dart';
 import '../models/screening_data_model.dart';
 import '../models/screening_list_model.dart';
 
@@ -262,14 +262,6 @@ class ScreeningController extends GetxController {
 
   /// Helper method to show error snackbar
   void _showErrorSnackbar(String message) {
-    Get.snackbar(
-      'Error',
-      message,
-      backgroundColor: AppColors.red,
-      colorText: AppColors.white,
-      snackPosition: SnackPosition.TOP,
-      margin: const EdgeInsets.all(16),
-      borderRadius: 8,
-    );
+    AppSnackbar.error(title: 'Error', message: message);
   }
 }

@@ -6,7 +6,7 @@ import 'package:my_sadari/app/routes/app_pages.dart';
 import '../../../../core/models/response_model.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/services/auth_service.dart';
-import '../../../styles/app_colors.dart';
+import '../../../widgets/app_snackbar.dart';
 
 class SignInController extends GetxController {
   late AuthService _authService;
@@ -39,38 +39,20 @@ class SignInController extends GetxController {
 
   Future<void> login() async {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      Get.snackbar(
-        "Error",
-        "Email dan password tidak boleh kosong",
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
+      AppSnackbar.error(
+        title: "Error",
+        message: "Email dan password tidak boleh kosong",
       );
       return;
     }
     if (!GetUtils.isEmail(emailController.text.trim())) {
-      Get.snackbar(
-        "Error",
-        "Format email tidak valid",
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
-      );
+      AppSnackbar.error(title: "Error", message: "Format email tidak valid");
       return;
     }
     if (passwordController.text.length < 6) {
-      Get.snackbar(
-        "Error",
-        "Password harus minimal 6 karakter",
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
+      AppSnackbar.error(
+        title: "Error",
+        message: "Password harus minimal 6 karakter",
       );
       return;
     }
@@ -99,15 +81,9 @@ class SignInController extends GetxController {
         await _authService.saveUserData(responseModel.token, userModel);
 
         // Show success message
-        Get.snackbar(
-          'Login Berhasil',
-          'Selamat datang, ${userModel.name}!',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: AppColors.pink,
-          colorText: Get.theme.colorScheme.onPrimary,
-          duration: const Duration(seconds: 3),
-          margin: const EdgeInsets.all(16),
-          borderRadius: 8,
+        AppSnackbar.success(
+          title: 'Login Berhasil',
+          message: 'Selamat datang, ${userModel.name}!',
         );
 
         // Navigate to home page
@@ -124,27 +100,12 @@ class SignInController extends GetxController {
           errorMessage = 'Email atau password salah';
         }
 
-        Get.snackbar(
-          'Login Gagal',
-          errorMessage,
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Get.theme.colorScheme.error,
-          colorText: Get.theme.colorScheme.onError,
-          duration: const Duration(seconds: 4),
-          margin: const EdgeInsets.all(16),
-          borderRadius: 8,
-        );
+        AppSnackbar.error(title: 'Login Gagal', message: errorMessage);
       }
     } catch (e) {
-      Get.snackbar(
-        'Login Gagal',
-        'Terjadi kesalahan saat login: ${e.toString()}',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        duration: const Duration(seconds: 4),
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
+      AppSnackbar.error(
+        title: 'Login Gagal',
+        message: 'Terjadi kesalahan saat login: ${e.toString()}',
       );
     } finally {
       isLoading.value = false;
@@ -153,28 +114,12 @@ class SignInController extends GetxController {
 
   Future<void> sendForgotPasswordEmail() async {
     if (forgotPasswordEmailController.text.trim().isEmpty) {
-      Get.snackbar(
-        "Error",
-        "Email tidak boleh kosong",
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
-      );
+      AppSnackbar.error(title: "Error", message: "Email tidak boleh kosong");
       return;
     }
 
     if (!GetUtils.isEmail(forgotPasswordEmailController.text.trim())) {
-      Get.snackbar(
-        "Error",
-        "Format email tidak valid",
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
-      );
+      AppSnackbar.error(title: "Error", message: "Format email tidak valid");
       return;
     }
 
@@ -193,15 +138,9 @@ class SignInController extends GetxController {
 
       if (response.statusCode == 200) {
         Get.back(); // Close dialog
-        Get.snackbar(
-          'Email Terkirim',
-          'Link reset password telah dikirim ke email Anda',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: AppColors.pink,
-          colorText: Get.theme.colorScheme.onPrimary,
-          duration: const Duration(seconds: 3),
-          margin: const EdgeInsets.all(16),
-          borderRadius: 8,
+        AppSnackbar.success(
+          title: 'Email Terkirim',
+          message: 'Link reset password telah dikirim ke email Anda',
         );
         forgotPasswordEmailController.clear();
       } else {
@@ -216,27 +155,15 @@ class SignInController extends GetxController {
                   : errorMessage;
         }
 
-        Get.snackbar(
-          'Gagal Mengirim Email',
-          errorMessage,
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: AppColors.orange,
-          colorText: AppColors.white,
-          duration: const Duration(seconds: 4),
-          margin: const EdgeInsets.all(16),
-          borderRadius: 8,
+        AppSnackbar.warning(
+          title: 'Gagal Mengirim Email',
+          message: errorMessage,
         );
       }
     } catch (e) {
-      Get.snackbar(
-        'Gagal Mengirim Email',
-        'Terjadi kesalahan: ${e.toString()}',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Get.theme.colorScheme.error,
-        colorText: Get.theme.colorScheme.onError,
-        duration: const Duration(seconds: 4),
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
+      AppSnackbar.error(
+        title: 'Gagal Mengirim Email',
+        message: 'Terjadi kesalahan: ${e.toString()}',
       );
     } finally {
       isForgotPasswordLoading.value = false;

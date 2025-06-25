@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../app/widgets/app_snackbar.dart';
+
 class NotificationService extends GetxService {
   static const String _channelKey = 'sadari_reminder_channel';
   static const String _channelName = 'SADARI Reminder';
@@ -292,11 +294,9 @@ class NotificationService extends GetxService {
       await openAppSettings();
     } catch (e) {
       if (kDebugMode) print('Error opening notification settings: $e');
-      Get.snackbar(
-        'Error',
-        'Tidak dapat membuka pengaturan',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.error(
+        title: 'Error',
+        message: 'Tidak dapat membuka pengaturan',
       );
     }
   }
@@ -327,25 +327,19 @@ class NotificationService extends GetxService {
     try {
       final hasPermission = await isNotificationPermissionGranted();
       if (!hasPermission) {
-        Get.snackbar(
-          'Izin Notifikasi Diperlukan',
-          'Silakan aktifkan notifikasi terlebih dahulu di pengaturan aplikasi',
+        AppSnackbar.action(
+          title: 'Izin Notifikasi Diperlukan',
+          message:
+              'Silakan aktifkan notifikasi terlebih dahulu di pengaturan aplikasi',
+          actionLabel: 'Aktifkan',
+          onAction: () async {
+            final granted = await requestNotificationPermissions();
+            if (granted) {
+              scheduleTestNotificationNow(); // Retry after permission granted
+            }
+          },
           backgroundColor: Colors.orange,
-          colorText: Colors.white,
           duration: const Duration(seconds: 4),
-          mainButton: TextButton(
-            onPressed: () async {
-              Get.back(); // Close snackbar
-              final granted = await requestNotificationPermissions();
-              if (granted) {
-                scheduleTestNotificationNow(); // Retry after permission granted
-              }
-            },
-            child: const Text(
-              'Aktifkan',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
         );
         return;
       }
@@ -376,22 +370,18 @@ class NotificationService extends GetxService {
         ),
       );
 
-      Get.snackbar(
-        'Test Scheduled',
-        'Test notification akan muncul dalam 2 detik',
-        backgroundColor: Colors.blue,
-        colorText: Colors.white,
+      AppSnackbar.info(
+        title: 'Test Scheduled',
+        message: 'Test notification akan muncul dalam 2 detik',
         duration: const Duration(seconds: 3),
       );
 
       if (kDebugMode)
         print('✅ Test notification scheduled for: ${scheduledTime.toString()}');
     } catch (e) {
-      Get.snackbar(
-        'Test Failed',
-        'Error scheduling test: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.error(
+        title: 'Test Failed',
+        message: 'Error scheduling test: $e',
       );
       if (kDebugMode) print('❌ Error scheduling test notification: $e');
     }
@@ -401,25 +391,18 @@ class NotificationService extends GetxService {
     try {
       final hasPermission = await isNotificationPermissionGranted();
       if (!hasPermission) {
-        Get.snackbar(
-          'Izin Notifikasi Diperlukan',
-          'Silakan aktifkan notifikasi terlebih dahulu untuk testing',
+        AppSnackbar.action(
+          title: 'Izin Notifikasi Diperlukan',
+          message: 'Silakan aktifkan notifikasi terlebih dahulu untuk testing',
+          actionLabel: 'Aktifkan',
+          onAction: () async {
+            final granted = await requestNotificationPermissions();
+            if (granted) {
+              scheduleTestSadariSequence(); // Retry after permission granted
+            }
+          },
           backgroundColor: Colors.orange,
-          colorText: Colors.white,
           duration: const Duration(seconds: 4),
-          mainButton: TextButton(
-            onPressed: () async {
-              Get.back(); // Close snackbar
-              final granted = await requestNotificationPermissions();
-              if (granted) {
-                scheduleTestSadariSequence(); // Retry after permission granted
-              }
-            },
-            child: const Text(
-              'Aktifkan',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
         );
         return;
       }
@@ -457,21 +440,17 @@ class NotificationService extends GetxService {
         );
       }
 
-      Get.snackbar(
-        'Test Sequence Scheduled',
-        'Test notifications akan muncul dalam 1-4 menit berikutnya',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
+      AppSnackbar.success(
+        title: 'Test Sequence Scheduled',
+        message: 'Test notifications akan muncul dalam 1-4 menit berikutnya',
         duration: const Duration(seconds: 5),
       );
 
       if (kDebugMode) print('✅ Test sequence scheduled for next 4 minutes');
     } catch (e) {
-      Get.snackbar(
-        'Test Failed',
-        'Error scheduling test sequence: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.error(
+        title: 'Test Failed',
+        message: 'Error scheduling test sequence: $e',
       );
       if (kDebugMode) print('❌ Error scheduling test sequence: $e');
     }
@@ -484,11 +463,9 @@ class NotificationService extends GetxService {
         await AwesomeNotifications().cancel(990 + i);
       }
 
-      Get.snackbar(
-        'Tests Cancelled',
-        'Semua test notifications telah dibatalkan',
-        backgroundColor: Colors.blue,
-        colorText: Colors.white,
+      AppSnackbar.info(
+        title: 'Tests Cancelled',
+        message: 'Semua test notifications telah dibatalkan',
       );
 
       if (kDebugMode) print('✅ All test notifications cancelled');
@@ -511,11 +488,9 @@ class NotificationService extends GetxService {
       final pendingNotifications = await getPendingNotifications();
 
       if (pendingNotifications.isEmpty) {
-        Get.snackbar(
-          'No Pending Notifications',
-          'Tidak ada notifikasi yang terjadwal',
-          backgroundColor: Colors.grey,
-          colorText: Colors.white,
+        AppSnackbar.info(
+          title: 'No Pending Notifications',
+          message: 'Tidak ada notifikasi yang terjadwal',
         );
         return;
       }
@@ -558,11 +533,9 @@ class NotificationService extends GetxService {
         }
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to get pending notifications: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.error(
+        title: 'Error',
+        message: 'Failed to get pending notifications: $e',
       );
     }
   }
@@ -582,22 +555,16 @@ class NotificationService extends GetxService {
         if (kDebugMode)
           print('❌ No notification permission - showing user-friendly message');
 
-        Get.snackbar(
-          'Izin Notifikasi Diperlukan',
-          'Untuk menjadwalkan pengingat SADARI, aplikasi memerlukan izin notifikasi',
+        AppSnackbar.action(
+          title: 'Izin Notifikasi Diperlukan',
+          message:
+              'Untuk menjadwalkan pengingat SADARI, aplikasi memerlukan izin notifikasi',
+          actionLabel: 'Berikan Izin',
+          onAction: () async {
+            await requestNotificationPermissions();
+          },
           backgroundColor: Colors.orange,
-          colorText: Colors.white,
           duration: const Duration(seconds: 5),
-          mainButton: TextButton(
-            onPressed: () async {
-              Get.back(); // Close snackbar
-              await requestNotificationPermissions();
-            },
-            child: const Text(
-              'Berikan Izin',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
         );
 
         throw Exception('Notification permission required');

@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/services/auth_service.dart';
 import '../../../routes/app_pages.dart';
+import '../../../widgets/app_snackbar.dart';
 
 class HomeController extends GetxController {
   late AuthService _authService;
@@ -20,15 +20,10 @@ class HomeController extends GetxController {
     await _authService.logout();
 
     // Show success message
-    Get.snackbar(
-      'Logout Berhasil',
-      'Anda telah berhasil keluar',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Get.theme.colorScheme.primary,
-      colorText: Get.theme.colorScheme.onPrimary,
+    AppSnackbar.success(
+      title: 'Logout Berhasil',
+      message: 'Anda telah berhasil keluar',
       duration: const Duration(seconds: 2),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 8,
     );
 
     // Navigate to sign in page after logout
