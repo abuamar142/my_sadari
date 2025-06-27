@@ -156,8 +156,7 @@ class ScheduleController extends GetxController {
         selectedMenstruationDate.value = DateTime.now();
         notesController.clear();
 
-        // Close bottom sheet or dialog
-        Get.back();
+        Navigator.of(Get.context!).pop();
       }
     } finally {
       isLoading.value = false;
