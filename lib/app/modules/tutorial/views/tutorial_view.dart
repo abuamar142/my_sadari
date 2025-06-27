@@ -553,10 +553,10 @@ class TutorialView extends GetView<TutorialController> {
           label: 'Tutup',
           type: DialogActionType.primary,
           color: AppColors.red,
-          icon: Icons.close,
+          icon: Icons.home,
           onPressed: () {
             Get.back();
-            Get.back();
+            Get.offAllNamed(Routes.home);
           },
         ),
       ],
