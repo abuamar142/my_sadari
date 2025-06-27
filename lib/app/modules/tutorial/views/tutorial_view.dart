@@ -460,7 +460,7 @@ class TutorialView extends GetView<TutorialController> {
 
       _showScreeningOptionsDialog();
     } else {
-      _showAbnormalityDialog();
+      AppDialog.showAbnormalityDialog();
     }
   }
 
@@ -482,7 +482,7 @@ class TutorialView extends GetView<TutorialController> {
           type: DialogActionType.secondary,
           onPressed: () {
             Get.back();
-            _showAbnormalityDialog();
+            AppDialog.showAbnormalityDialog();
           },
         ),
         DialogAction(
@@ -492,99 +492,6 @@ class TutorialView extends GetView<TutorialController> {
           onPressed: () {
             Get.back();
             Get.offNamed(Routes.screening, arguments: {'fromSchedule': true});
-          },
-        ),
-      ],
-      barrierDismissible: false,
-    );
-  }
-
-  void _showAbnormalityDialog() {
-    AppDialog.show(
-      title: 'Pertanyaan Wajib',
-      headerIcon: Icons.help_outline,
-      headerColor: AppColors.orange,
-      headerSecondaryColor: AppColors.orange.withValues(alpha: 0.8),
-      content:
-          'Apakah setelah melakukan pemeriksaan SADARI ditemukan abnormalitas pada payudara?',
-      infoBox: InfoBox(
-        text: 'Pertanyaan ini wajib dijawab',
-        icon: Icons.info_outline,
-        color: AppColors.orange,
-      ),
-      actions: [
-        DialogAction(
-          label: 'Tidak',
-          type: DialogActionType.secondary,
-          color: AppColors.teal1,
-          onPressed: () {
-            Get.back();
-            _showNormalResultDialog();
-          },
-        ),
-        DialogAction(
-          label: 'Ya',
-          type: DialogActionType.primary,
-          color: AppColors.red,
-          onPressed: () {
-            Get.back();
-            _showAbnormalityWarning();
-          },
-        ),
-      ],
-      barrierDismissible: false,
-    );
-  }
-
-  void _showAbnormalityWarning() {
-    AppDialog.show(
-      title: 'Peringatan Penting',
-      headerIcon: Icons.warning_rounded,
-      headerColor: AppColors.red,
-      headerSecondaryColor: AppColors.pink,
-      content: '',
-      customContent: WarningContent(
-        message:
-            'Ditemukan adanya ketidaknormalan pada payudara. Segera periksakan ke pelayanan kesehatan terdekat.',
-        actionText: 'Hubungi dokter atau puskesmas terdekat segera',
-      ),
-      actions: [
-        DialogAction(
-          label: 'Tutup',
-          type: DialogActionType.primary,
-          color: AppColors.red,
-          icon: Icons.home,
-          onPressed: () {
-            Get.back();
-            Get.offAllNamed(Routes.home);
-          },
-        ),
-      ],
-      barrierDismissible: false,
-    );
-  }
-
-  void _showNormalResultDialog() {
-    AppDialog.show(
-      title: 'Hasil Pemeriksaan',
-      headerIcon: Icons.check_circle_rounded,
-      headerColor: AppColors.teal1,
-      headerSecondaryColor: AppColors.teal2,
-      content: 'Tidak Ditemukan Adanya Ketidaknormalan Pada Payudara.',
-      infoBox: InfoBox(
-        text: 'Tetap lakukan pemeriksaan SADARI secara rutin setiap bulan',
-        icon: Icons.info_outline,
-        color: AppColors.teal1,
-      ),
-      actions: [
-        DialogAction(
-          label: 'Tutup',
-          type: DialogActionType.primary,
-          color: AppColors.teal1,
-          icon: Icons.home,
-          onPressed: () {
-            Get.back();
-            Get.offAllNamed(Routes.home);
           },
         ),
       ],
