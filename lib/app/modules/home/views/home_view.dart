@@ -396,12 +396,12 @@ class HomeView extends GetView<HomeController> {
                 ),
                 _buildDrawerItem(
                   icon: Icons.schedule_outlined,
-                  title: "Jadwal SADARI",
+                  title: "Riwayat Sadari",
                   onTap: () => Get.toNamed(Routes.schedule),
                 ),
                 _buildDrawerItem(
                   icon: Icons.history_outlined,
-                  title: "Riwayat Periksa",
+                  title: "Riwayat Skrining Risiko",
                   onTap: () => Get.toNamed(Routes.history),
                 ),
                 // _buildDrawerItem(

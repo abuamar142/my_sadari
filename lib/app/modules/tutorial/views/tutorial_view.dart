@@ -470,7 +470,7 @@ class TutorialView extends GetView<TutorialController> {
       headerIcon: Icons.check_circle_rounded,
       headerColor: AppColors.teal1,
       headerSecondaryColor: AppColors.teal2,
-      content: 'Apakah Anda ingin melakukan update screening faktor risiko?',
+      content: 'Apakah Anda ingin melakukan update skrining faktor risiko?',
       infoBox: InfoBox(
         text: 'Ini akan membantu memperbarui profil risiko Anda',
         icon: Icons.info_outline,
