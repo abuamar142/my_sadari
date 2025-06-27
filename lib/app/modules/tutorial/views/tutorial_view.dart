@@ -519,7 +519,7 @@ class TutorialView extends GetView<TutorialController> {
           color: AppColors.teal1,
           onPressed: () {
             Get.back();
-            Get.back();
+            _showNormalResultDialog();
           },
         ),
         DialogAction(
@@ -557,6 +557,34 @@ class TutorialView extends GetView<TutorialController> {
           onPressed: () {
             Get.back();
             Get.back();
+          },
+        ),
+      ],
+      barrierDismissible: false,
+    );
+  }
+
+  void _showNormalResultDialog() {
+    AppDialog.show(
+      title: 'Hasil Pemeriksaan',
+      headerIcon: Icons.check_circle_rounded,
+      headerColor: AppColors.teal1,
+      headerSecondaryColor: AppColors.teal2,
+      content: 'Tidak Ditemukan Adanya Ketidaknormalan Pada Payudara.',
+      infoBox: InfoBox(
+        text: 'Tetap lakukan pemeriksaan SADARI secara rutin setiap bulan',
+        icon: Icons.info_outline,
+        color: AppColors.teal1,
+      ),
+      actions: [
+        DialogAction(
+          label: 'Tutup',
+          type: DialogActionType.primary,
+          color: AppColors.teal1,
+          icon: Icons.home,
+          onPressed: () {
+            Get.back();
+            Get.offAllNamed(Routes.home);
           },
         ),
       ],
