@@ -217,7 +217,12 @@ class ScreeningController extends GetxController {
       if (response.success) {
         // 6. Jika dari jadwal, tampilkan dialog abnormalitas
         if (isFromSchedule) {
-          AppDialog.showAbnormalityDialog();
+          AppDialog.showAbnormalityDialog(
+            onResult: (result) {
+              // Save result to active schedule
+              _saveResultToSchedule(result);
+            },
+          );
           return;
         }
 
@@ -270,5 +275,21 @@ class ScreeningController extends GetxController {
   /// Helper method to show error snackbar
   void _showErrorSnackbar(String message) {
     AppSnackbar.error(title: 'Error', message: message);
+  }
+
+  /// Save SADARI result to active schedule
+  void _saveResultToSchedule(String result) {
+    try {
+      final scheduleService = Get.find<ScheduleService>();
+      final activeSchedule = scheduleService.activeSchedule;
+
+      if (activeSchedule != null) {
+        scheduleService.updateScheduleResult(activeSchedule.id, result);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error saving result to schedule: $e');
+      }
+    }
   }
 }

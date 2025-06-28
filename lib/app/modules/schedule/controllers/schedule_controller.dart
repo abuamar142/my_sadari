@@ -24,12 +24,54 @@ class ScheduleController extends GetxController {
   final RxString selectedView = 'calendar'.obs; // 'calendar' or 'list'
   final RxMap<String, dynamic> notificationStatus = <String, dynamic>{}.obs;
 
+  // Filter variables
+  final RxInt selectedYear = DateTime.now().year.obs;
+  final RxInt selectedMonth = DateTime.now().month.obs;
+
   // Getters
   List<Schedule> get schedules => _scheduleService.schedules;
   Schedule? get activeSchedule => _scheduleService.activeSchedule;
   bool get isTodayReminderDay => _scheduleService.isTodayReminderDay;
   Map<String, dynamic>? get nextReminderInfo =>
       _scheduleService.nextReminderInfo;
+
+  // Filtered schedules by month and year
+  List<Schedule> get filteredSchedules {
+    return schedules.where((schedule) {
+        final scheduleDate = schedule.menstruationStartDate;
+        return scheduleDate.year == selectedYear.value &&
+            scheduleDate.month == selectedMonth.value;
+      }).toList()
+      ..sort(
+        (a, b) => b.menstruationStartDate.compareTo(a.menstruationStartDate),
+      );
+  }
+
+  // Get available years from schedules
+  List<int> get availableYears {
+    if (schedules.isEmpty) return [DateTime.now().year];
+
+    final years =
+        schedules.map((s) => s.menstruationStartDate.year).toSet().toList()
+          ..sort((a, b) => b.compareTo(a));
+
+    return years;
+  }
+
+  // Get available months for selected year
+  List<int> get availableMonths {
+    if (schedules.isEmpty) return [DateTime.now().month];
+
+    final months =
+        schedules
+            .where((s) => s.menstruationStartDate.year == selectedYear.value)
+            .map((s) => s.menstruationStartDate.month)
+            .toSet()
+            .toList()
+          ..sort((a, b) => b.compareTo(a));
+
+    return months.isEmpty ? [DateTime.now().month] : months;
+  }
 
   @override
   void onInit() {
@@ -608,6 +650,62 @@ class ScheduleController extends GetxController {
       if (kDebugMode) {
         print('❌ Error in navigateToScreening: $e');
       }
+    }
+  }
+
+  // Filter methods
+  void updateSelectedYear(int year) {
+    selectedYear.value = year;
+    // Update month to the first available month for this year
+    final months = availableMonths;
+    if (months.isNotEmpty && !months.contains(selectedMonth.value)) {
+      selectedMonth.value = months.first;
+    }
+  }
+
+  void updateSelectedMonth(int month) {
+    selectedMonth.value = month;
+  }
+
+  // Get month name
+  String getMonthName(int month) {
+    const monthNames = [
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
+    ];
+    return monthNames[month - 1];
+  }
+
+  // Get result text and color
+  Map<String, dynamic> getResultInfo(String? result) {
+    if (result == null) {
+      return {
+        'text': 'Belum ada hasil',
+        'color': Colors.grey,
+        'icon': Icons.help_outline,
+      };
+    } else if (result == 'normal') {
+      return {
+        'text': 'Tidak ditemukan adanya ketidaknormalan pada payudara',
+        'color': Colors.green,
+        'icon': Icons.check_circle,
+      };
+    } else {
+      return {
+        'text': 'Ditemukan adanya ketidaknormalan pada payudara',
+        'color': Colors.red,
+        'icon': Icons.warning,
+      };
     }
   }
 }

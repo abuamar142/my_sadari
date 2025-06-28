@@ -175,7 +175,7 @@ class AppDialog extends StatelessWidget {
     );
   }
 
-  static void showAbnormalityDialog() {
+  static void showAbnormalityDialog({Function(String)? onResult}) {
     AppDialog.show(
       title: 'Pertanyaan Wajib',
       headerIcon: Icons.help_outline,
@@ -195,6 +195,7 @@ class AppDialog extends StatelessWidget {
           color: AppColors.teal1,
           onPressed: () {
             Get.back();
+            onResult?.call('normal');
             showNormalResultDialog();
           },
         ),
@@ -204,6 +205,7 @@ class AppDialog extends StatelessWidget {
           color: AppColors.red,
           onPressed: () {
             Get.back();
+            onResult?.call('abnormal');
             showAbnormalityWarning();
           },
         ),

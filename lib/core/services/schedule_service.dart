@@ -253,7 +253,7 @@ class ScheduleService extends GetxService {
   }
 
   // Mark SADARI as completed for the active schedule
-  Future<bool> markSadariCompleted() async {
+  Future<bool> markSadariCompleted({String? result}) async {
     try {
       final active = activeSchedule;
       if (active == null) {
@@ -271,8 +271,11 @@ class ScheduleService extends GetxService {
         return false;
       }
 
-      // Update the schedule with completion time
-      final updatedSchedule = active.copyWith(completedAt: DateTime.now());
+      // Update the schedule with completion time and result
+      final updatedSchedule = active.copyWith(
+        completedAt: DateTime.now(),
+        result: result,
+      );
 
       // Update in the list
       final index = _schedules.indexWhere((s) => s.id == active.id);
@@ -281,7 +284,9 @@ class ScheduleService extends GetxService {
         await _saveSchedules();
 
         if (kDebugMode) {
-          print('✅ SADARI marked as completed for schedule ${active.id}');
+          print(
+            '✅ SADARI marked as completed for schedule ${active.id} with result: $result',
+          );
         }
 
         return true;
@@ -291,6 +296,33 @@ class ScheduleService extends GetxService {
     } catch (e) {
       if (kDebugMode) {
         print('❌ Error marking SADARI as completed: $e');
+      }
+      return false;
+    }
+  }
+
+  // Update schedule with SADARI result
+  Future<bool> updateScheduleResult(String scheduleId, String result) async {
+    try {
+      final index = _schedules.indexWhere((s) => s.id == scheduleId);
+      if (index != -1) {
+        final updatedSchedule = _schedules[index].copyWith(
+          result: result,
+          completedAt: DateTime.now(),
+        );
+        _schedules[index] = updatedSchedule;
+        await _saveSchedules();
+
+        if (kDebugMode) {
+          print('✅ Schedule result updated: $scheduleId -> $result');
+        }
+
+        return true;
+      }
+      return false;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error updating schedule result: $e');
       }
       return false;
     }

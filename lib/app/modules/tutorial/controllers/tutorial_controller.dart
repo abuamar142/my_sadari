@@ -24,7 +24,7 @@ class TutorialController extends GetxController {
   bool get isFromSchedule =>
       Get.arguments != null && Get.arguments['fromSchedule'] == true;
 
-  Future<bool> markSadariCompleted() async {
+  Future<bool> markSadariCompleted({String? result}) async {
     try {
       // Check if schedule service is available
       if (!Get.isRegistered<ScheduleService>()) {
@@ -34,7 +34,7 @@ class TutorialController extends GetxController {
         return false;
       }
 
-      return await _scheduleService.markSadariCompleted();
+      return await _scheduleService.markSadariCompleted(result: result);
     } catch (e) {
       if (kDebugMode) {
         print('Error marking SADARI completed: $e');
@@ -81,4 +81,19 @@ class TutorialController extends GetxController {
       color: AppColors.orange,
     ),
   ];
+
+  /// Save SADARI result to active schedule
+  void saveResultToSchedule(String result) {
+    try {
+      final activeSchedule = _scheduleService.activeSchedule;
+
+      if (activeSchedule != null) {
+        _scheduleService.updateScheduleResult(activeSchedule.id, result);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error saving result to schedule: $e');
+      }
+    }
+  }
 }

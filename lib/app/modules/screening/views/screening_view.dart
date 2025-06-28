@@ -453,9 +453,7 @@ class ScreeningView extends GetView<ScreeningController> {
                     onPressed: () {
                       Get.back();
 
-                      if (controller.isFromSchedule) {
-                        Get.back();
-                      }
+                      Get.offAllNamed(Routes.home);
                     },
                     style: OutlinedButton.styleFrom(
                       padding: EdgeInsets.symmetric(vertical: 12),
@@ -467,9 +465,7 @@ class ScreeningView extends GetView<ScreeningController> {
                       side: BorderSide(color: Colors.grey.shade300),
                     ),
                     child: Text(
-                      controller.isFromSchedule
-                          ? 'Kembali ke Jadwal'
-                          : 'Kembali',
+                      'Kembali',
                       style: AppTextStyle.bodyLarge1.copyWith(
                         color: Colors.grey.shade600,
                       ),

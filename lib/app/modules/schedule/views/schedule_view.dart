@@ -136,37 +136,13 @@ class ScheduleView extends GetView<ScheduleController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Riwayat Jadwal',
-                style: AppTextStyle.headingMedium1.copyWith(
-                  color: AppColors.black,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.purple1.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusSmall,
-                  ),
-                ),
-                child: Obx(
-                  () => Text(
-                    '${controller.schedules.length} jadwal',
-                    style: AppTextStyle.caption.copyWith(
-                      color: AppColors.purple1,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          // Header with Filter Controls
+          _buildScheduleHeader(),
+
+          SizedBox(height: AppDimensions.paddingMedium),
+
+          // Filter Controls
+          _buildFilterControls(),
 
           SizedBox(height: AppDimensions.paddingMedium),
 
@@ -175,10 +151,17 @@ class ScheduleView extends GetView<ScheduleController> {
             if (controller.schedules.isEmpty) {
               return _buildEmptyScheduleList();
             }
+
+            final groupedSchedules = _groupSchedulesByMonth();
+
+            if (groupedSchedules.isEmpty) {
+              return _buildNoFilteredSchedules();
+            }
+
             return Column(
               children: [
-                for (final schedule in controller.schedules)
-                  _buildScheduleListItem(schedule),
+                for (final entry in groupedSchedules.entries)
+                  _buildMonthSection(entry.key, entry.value),
               ],
             );
           }),
@@ -501,132 +484,6 @@ class ScheduleView extends GetView<ScheduleController> {
     );
   }
 
-  Widget _buildScheduleListItem(dynamic schedule) {
-    final statusColor = controller.getScheduleStatusColor(schedule);
-    final statusText = controller.getScheduleStatusText(schedule);
-    final windowInfo = controller.getSadariWindowInfo(schedule);
-    return Container(
-      margin: EdgeInsets.only(bottom: 12),
-      padding: EdgeInsets.all(AppDimensions.paddingMedium),
-      decoration: BoxDecoration(
-        color: Colors.grey.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusSmall,
-                  ),
-                ),
-                child: Text(
-                  statusText,
-                  style: AppTextStyle.caption.copyWith(
-                    color: statusColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Spacer(),
-              PopupMenuButton(
-                icon: Icon(Icons.more_vert, color: Colors.grey[600]),
-                itemBuilder:
-                    (context) => [
-                      PopupMenuItem(
-                        value: 'toggle',
-                        child: Row(
-                          children: [
-                            Icon(
-                              schedule.isActive
-                                  ? Icons.pause
-                                  : Icons.play_arrow,
-                              size: 16,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              schedule.isActive ? 'Nonaktifkan' : 'Aktifkan',
-                              style: AppTextStyle.bodyMedium1,
-                            ),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete, size: 16, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text(
-                              'Hapus',
-                              style: AppTextStyle.bodyMedium1.copyWith(
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                onSelected: (value) {
-                  if (value == 'toggle') {
-                    controller.toggleScheduleStatus(schedule);
-                  } else if (value == 'delete') {
-                    controller.deleteSchedule(schedule.id);
-                  }
-                },
-              ),
-            ],
-          ),
-          SizedBox(height: AppDimensions.paddingMedium),
-          Text(
-            'Menstruasi: ${controller.formatDate(schedule.menstruationStartDate)}',
-            style: AppTextStyle.bodyMedium1.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppColors.black,
-            ),
-          ),
-          SizedBox(height: AppDimensions.paddingSmall),
-          Text(
-            'SADARI: ${windowInfo['windowDays']}',
-            style: AppTextStyle.bodyMedium1.copyWith(color: Colors.grey[600]),
-          ),
-          if (schedule.isCompleted) ...[
-            SizedBox(height: AppDimensions.paddingSmall),
-            Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.green, size: 16),
-                SizedBox(width: 4),
-                Text(
-                  'Selesai pada ${controller.formatDate(schedule.completedAt!)}',
-                  style: AppTextStyle.caption.copyWith(
-                    color: Colors.green,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ],
-          if (schedule.notes != null && schedule.notes!.isNotEmpty) ...[
-            SizedBox(height: AppDimensions.paddingSmall),
-            Text(
-              schedule.notes!,
-              style: AppTextStyle.caption.copyWith(
-                color: Colors.grey[500],
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   Widget _buildNotificationStatusIcon() {
     return Obx(() {
       final status = controller.notificationStatus;
@@ -778,6 +635,651 @@ class ScheduleView extends GetView<ScheduleController> {
         ),
       ],
       barrierDismissible: true,
+    );
+  }
+
+  Widget _buildScheduleHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Riwayat Jadwal',
+          style: AppTextStyle.headingMedium1.copyWith(
+            color: AppColors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppColors.purple1.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
+          ),
+          child: Obx(
+            () => Text(
+              '${controller.schedules.length} jadwal',
+              style: AppTextStyle.caption.copyWith(
+                color: AppColors.purple1,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterControls() {
+    return Obx(() {
+      final availableYears = controller.availableYears;
+      final availableMonths = controller.availableMonths;
+
+      // Ensure selected values are valid
+      final selectedYear =
+          availableYears.contains(controller.selectedYear.value)
+              ? controller.selectedYear.value
+              : (availableYears.isNotEmpty
+                  ? availableYears.first
+                  : DateTime.now().year);
+
+      final selectedMonth =
+          availableMonths.contains(controller.selectedMonth.value)
+              ? controller.selectedMonth.value
+              : (availableMonths.isNotEmpty
+                  ? availableMonths.first
+                  : DateTime.now().month);
+
+      return Row(
+        children: [
+          // Year Selector
+          Expanded(
+            child: GestureDetector(
+              onTap: () => _showYearSelector(availableYears, selectedYear),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusSmall,
+                  ),
+                  color: Colors.grey.withValues(alpha: 0.05),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today,
+                      color: AppColors.purple1,
+                      size: 18,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        selectedYear.toString(),
+                        style: AppTextStyle.bodyMedium1.copyWith(
+                          color: AppColors.black,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.keyboard_arrow_down,
+                      color: Colors.grey[600],
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 12),
+          // Month Selector
+          Expanded(
+            flex: 2,
+            child: GestureDetector(
+              onTap: () => _showMonthSelector(availableMonths, selectedMonth),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusSmall,
+                  ),
+                  color: Colors.grey.withValues(alpha: 0.05),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.event, color: AppColors.purple1, size: 18),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        controller.getMonthName(selectedMonth),
+                        style: AppTextStyle.bodyMedium1.copyWith(
+                          color: AppColors.black,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.keyboard_arrow_down,
+                      color: Colors.grey[600],
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    });
+  }
+
+  Map<String, List<dynamic>> _groupSchedulesByMonth() {
+    final filtered = controller.filteredSchedules;
+    final Map<String, List<dynamic>> grouped = {};
+
+    for (final schedule in filtered) {
+      final monthYear =
+          '${controller.getMonthName(schedule.menstruationStartDate.month)} ${schedule.menstruationStartDate.year}';
+
+      if (!grouped.containsKey(monthYear)) {
+        grouped[monthYear] = [];
+      }
+      grouped[monthYear]!.add(schedule);
+    }
+
+    return grouped;
+  }
+
+  Widget _buildNoFilteredSchedules() {
+    return Container(
+      padding: EdgeInsets.all(AppDimensions.paddingLarge),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.purple1.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.filter_list, size: 48, color: AppColors.purple1),
+          ),
+          SizedBox(height: AppDimensions.paddingMedium),
+          Text(
+            'Tidak ada jadwal',
+            textAlign: TextAlign.center,
+            style: AppTextStyle.headingMedium1.copyWith(
+              color: AppColors.black,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: AppDimensions.paddingSmall),
+          Text(
+            'Coba pilih bulan atau tahun yang berbeda',
+            style: AppTextStyle.bodyMedium1.copyWith(color: Colors.grey[500]),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMonthSection(String monthYear, List<dynamic> schedules) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Month Header
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          margin: EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: AppColors.purple1.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.calendar_month, color: AppColors.purple1, size: 20),
+              SizedBox(width: 8),
+              Text(
+                monthYear,
+                style: AppTextStyle.headingMedium1.copyWith(
+                  color: AppColors.purple1,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Spacer(),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.purple1.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusSmall,
+                  ),
+                ),
+                child: Text(
+                  '${schedules.length} jadwal',
+                  style: AppTextStyle.caption.copyWith(
+                    color: AppColors.purple1,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Schedules in this month
+        ...schedules.map((schedule) => _buildDetailedScheduleItem(schedule)),
+        SizedBox(height: AppDimensions.paddingMedium),
+      ],
+    );
+  }
+
+  Widget _buildDetailedScheduleItem(dynamic schedule) {
+    final windowInfo = controller.getSadariWindowInfo(schedule);
+    final resultInfo = controller.getResultInfo(schedule.result);
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(AppDimensions.paddingMedium),
+      decoration: BoxDecoration(
+        color: Colors.grey.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Row with Status and Menu
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color:
+                      schedule.isCompleted
+                          ? Colors.green.withValues(alpha: 0.1)
+                          : Colors.orange.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusSmall,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      schedule.isCompleted ? Icons.check_circle : Icons.pending,
+                      size: 14,
+                      color:
+                          schedule.isCompleted ? Colors.green : Colors.orange,
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      schedule.isCompleted ? 'Selesai' : 'Belum Selesai',
+                      style: AppTextStyle.caption.copyWith(
+                        color:
+                            schedule.isCompleted ? Colors.green : Colors.orange,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Spacer(),
+              PopupMenuButton(
+                icon: Icon(Icons.more_vert, color: Colors.grey[600], size: 18),
+                itemBuilder:
+                    (context) => [
+                      PopupMenuItem(
+                        value: 'toggle',
+                        child: Row(
+                          children: [
+                            Icon(
+                              schedule.isActive
+                                  ? Icons.pause
+                                  : Icons.play_arrow,
+                              size: 16,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              schedule.isActive ? 'Nonaktifkan' : 'Aktifkan',
+                              style: AppTextStyle.bodyMedium1,
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, size: 16, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text(
+                              'Hapus',
+                              style: AppTextStyle.bodyMedium1.copyWith(
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                onSelected: (value) {
+                  if (value == 'toggle') {
+                    controller.toggleScheduleStatus(schedule);
+                  } else if (value == 'delete') {
+                    controller.deleteSchedule(schedule.id);
+                  }
+                },
+              ),
+            ],
+          ),
+
+          SizedBox(height: AppDimensions.paddingMedium),
+
+          // Schedule Details
+          _buildScheduleDetailRow(
+            'Tanggal Menstruasi',
+            controller.formatDate(schedule.menstruationStartDate),
+            Icons.event,
+            AppColors.purple1,
+          ),
+
+          SizedBox(height: 8),
+
+          _buildScheduleDetailRow(
+            'Periode SADARI',
+            windowInfo['windowDays'],
+            Icons.schedule,
+            Colors.blue,
+          ),
+
+          SizedBox(height: 8),
+
+          // Result Row
+          Row(
+            children: [
+              Icon(resultInfo['icon'], size: 16, color: resultInfo['color']),
+              SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Hasil Pemeriksaan',
+                      style: AppTextStyle.caption.copyWith(
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      resultInfo['text'],
+                      style: AppTextStyle.bodySmall1.copyWith(
+                        color: resultInfo['color'],
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          if (schedule.isCompleted) ...[
+            SizedBox(height: 8),
+            _buildScheduleDetailRow(
+              'Tanggal Selesai',
+              controller.formatDate(schedule.completedAt!),
+              Icons.check_circle,
+              Colors.green,
+            ),
+          ],
+
+          if (schedule.notes != null && schedule.notes!.isNotEmpty) ...[
+            SizedBox(height: AppDimensions.paddingSmall),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Catatan',
+                    style: AppTextStyle.caption.copyWith(
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    schedule.notes!,
+                    style: AppTextStyle.caption.copyWith(
+                      color: Colors.grey[700],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScheduleDetailRow(
+    String label,
+    String value,
+    IconData icon,
+    Color iconColor,
+  ) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: iconColor),
+        SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: AppTextStyle.caption.copyWith(
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                value,
+                style: AppTextStyle.bodySmall1.copyWith(
+                  color: AppColors.black,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showYearSelector(List<int> availableYears, int selectedYear) {
+    Get.bottomSheet(
+      Container(
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(AppDimensions.radiusLarge),
+            topRight: Radius.circular(AppDimensions.radiusLarge),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              margin: EdgeInsets.only(top: 12, bottom: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Header
+            Padding(
+              padding: EdgeInsets.all(AppDimensions.paddingLarge),
+              child: Row(
+                children: [
+                  Icon(Icons.calendar_today, color: AppColors.purple1),
+                  SizedBox(width: 12),
+                  Text(
+                    'Pilih Tahun',
+                    style: AppTextStyle.headingMedium1.copyWith(
+                      color: AppColors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Spacer(),
+                  IconButton(
+                    onPressed: () => Get.back(),
+                    icon: Icon(Icons.close, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ),
+            // Year List
+            Container(
+              constraints: BoxConstraints(maxHeight: 300),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: availableYears.length,
+                itemBuilder: (context, index) {
+                  final year = availableYears[index];
+                  final isSelected = year == selectedYear;
+
+                  return ListTile(
+                    leading: Icon(
+                      Icons.date_range,
+                      color: isSelected ? AppColors.purple1 : Colors.grey[600],
+                    ),
+                    title: Text(
+                      year.toString(),
+                      style: AppTextStyle.bodyMedium1.copyWith(
+                        color: isSelected ? AppColors.purple1 : AppColors.black,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                    trailing:
+                        isSelected
+                            ? Icon(Icons.check, color: AppColors.purple1)
+                            : null,
+                    onTap: () {
+                      controller.updateSelectedYear(year);
+                      Get.back();
+                    },
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: AppDimensions.paddingLarge),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  void _showMonthSelector(List<int> availableMonths, int selectedMonth) {
+    Get.bottomSheet(
+      Container(
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(AppDimensions.radiusLarge),
+            topRight: Radius.circular(AppDimensions.radiusLarge),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              margin: EdgeInsets.only(top: 12, bottom: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Header
+            Padding(
+              padding: EdgeInsets.all(AppDimensions.paddingLarge),
+              child: Row(
+                children: [
+                  Icon(Icons.event, color: AppColors.purple1),
+                  SizedBox(width: 12),
+                  Text(
+                    'Pilih Bulan',
+                    style: AppTextStyle.headingMedium1.copyWith(
+                      color: AppColors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Spacer(),
+                  IconButton(
+                    onPressed: () => Get.back(),
+                    icon: Icon(Icons.close, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ),
+            // Month List
+            Container(
+              constraints: BoxConstraints(maxHeight: 400),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: availableMonths.length,
+                itemBuilder: (context, index) {
+                  final month = availableMonths[index];
+                  final isSelected = month == selectedMonth;
+
+                  return ListTile(
+                    leading: Icon(
+                      Icons.calendar_month,
+                      color: isSelected ? AppColors.purple1 : Colors.grey[600],
+                    ),
+                    title: Text(
+                      controller.getMonthName(month),
+                      style: AppTextStyle.bodyMedium1.copyWith(
+                        color: isSelected ? AppColors.purple1 : AppColors.black,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                    trailing:
+                        isSelected
+                            ? Icon(Icons.check, color: AppColors.purple1)
+                            : null,
+                    onTap: () {
+                      controller.updateSelectedMonth(month);
+                      Get.back();
+                    },
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: AppDimensions.paddingLarge),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
     );
   }
 }

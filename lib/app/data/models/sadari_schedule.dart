@@ -8,6 +8,8 @@ class Schedule {
   final DateTime createdAt;
   final String? notes;
   final DateTime? completedAt; // Tanggal ketika SADARI selesai dilakukan
+  final String? result; // Hasil SADARI: 'normal' atau 'abnormal'
+
   Schedule({
     required this.id,
     required this.menstruationStartDate,
@@ -18,6 +20,7 @@ class Schedule {
     required this.createdAt,
     this.notes,
     this.completedAt,
+    this.result,
   });
 
   // Calculate sadari dates from menstruation start date
@@ -63,6 +66,7 @@ class Schedule {
       'createdAt': createdAt.millisecondsSinceEpoch,
       'notes': notes,
       'completedAt': completedAt?.millisecondsSinceEpoch,
+      'result': result,
     };
   }
 
@@ -90,9 +94,10 @@ class Schedule {
           json['completedAt'] != null
               ? DateTime.fromMillisecondsSinceEpoch(json['completedAt'])
               : null,
+      result: json['result'],
     );
   }
-  
+
   // Copy with method for updates
   Schedule copyWith({
     String? id,
@@ -104,6 +109,7 @@ class Schedule {
     DateTime? createdAt,
     String? notes,
     DateTime? completedAt,
+    String? result,
   }) {
     return Schedule(
       id: id ?? this.id,
@@ -116,6 +122,7 @@ class Schedule {
       createdAt: createdAt ?? this.createdAt,
       notes: notes ?? this.notes,
       completedAt: completedAt ?? this.completedAt,
+      result: result ?? this.result,
     );
   }
 

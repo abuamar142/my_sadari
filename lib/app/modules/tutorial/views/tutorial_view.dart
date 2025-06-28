@@ -455,13 +455,7 @@ class TutorialView extends GetView<TutorialController> {
   }
 
   void _completeTutorial() async {
-    if (controller.isFromSchedule) {
-      await controller.markSadariCompleted();
-
-      _showScreeningOptionsDialog();
-    } else {
-      AppDialog.showAbnormalityDialog();
-    }
+    _showScreeningOptionsDialog();
   }
 
   void _showScreeningOptionsDialog() {
@@ -482,7 +476,11 @@ class TutorialView extends GetView<TutorialController> {
           type: DialogActionType.secondary,
           onPressed: () {
             Get.back();
-            AppDialog.showAbnormalityDialog();
+            AppDialog.showAbnormalityDialog(
+              onResult: (result) async {
+                await controller.markSadariCompleted(result: result);
+              },
+            );
           },
         ),
         DialogAction(
